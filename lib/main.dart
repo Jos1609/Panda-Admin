@@ -6,8 +6,9 @@ import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:panda_admin/providers/filter_provider.dart';
 import 'package:panda_admin/providers/order_provider.dart';
+import 'package:panda_admin/screens/login_screen.dart';
 //import 'package:panda_admin/screens/dashboard_screen.dart';
-import 'package:panda_admin/screens/orders/orders_list_screen.dart';
+//import 'package:panda_admin/screens/orders/orders_list_screen.dart';
 import 'services/auth_service.dart';
 //import 'screens/login_screen.dart';
 import 'screens/home_screen.dart';
@@ -60,9 +61,9 @@ class MyApp extends StatelessWidget {
           if (snapshot.hasData) {
             return const HomeScreen();
           }
-          return const OrdersListScreen();
+          //return const OrdersListScreen();
           //return const DashboardScreen();
-          //return const LoginScreen();
+          return const LoginScreen();
         },
       ),
     );
