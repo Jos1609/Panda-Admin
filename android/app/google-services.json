@@ -1,0 +1,67 @@
+{
+  "project_info": {
+    "project_number": "706710228171",
+    "project_id": "panda-delivery-e4e74",
+    "storage_bucket": "panda-delivery-e4e74.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:706710228171:android:5a463405dc711f4a69df4e",
+        "android_client_info": {
+          "package_name": "com.example.PandaR"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAwsz2XGOW6gB8egc7aNhdVyE_203a3r9Q"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:706710228171:android:0bb869130adc16f569df4e",
+        "android_client_info": {
+          "package_name": "com.example.panda_admin"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAwsz2XGOW6gB8egc7aNhdVyE_203a3r9Q"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:706710228171:android:be2db03fb198056369df4e",
+        "android_client_info": {
+          "package_name": "com.example.panda"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAwsz2XGOW6gB8egc7aNhdVyE_203a3r9Q"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
