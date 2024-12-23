@@ -4,6 +4,7 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 // ignore: depend_on_referenced_packages
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:panda_admin/firebase_options.dart';
 import 'package:panda_admin/providers/filter_provider.dart';
 import 'package:panda_admin/providers/order_provider.dart';
 import 'package:panda_admin/screens/login_screen.dart';
@@ -15,7 +16,9 @@ import 'package:provider/provider.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await Firebase.initializeApp();
+  await Firebase.initializeApp(
+    options: DefaultFirebaseOptions.currentPlatform,
+  );
   
   runApp(
     MultiProvider(
