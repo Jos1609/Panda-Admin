@@ -24,4 +24,30 @@ class Validators {
     
     return null;
   }
+   static String? required(String? value) {
+    if (value == null || value.isEmpty) {
+      return 'Este campo es requerido';
+    }
+    return null;
+  }
+
+  static String? phone(String? value) {
+    if (value == null || value.isEmpty) {
+      return 'Este campo es requerido';
+    }
+    if (!RegExp(r'^\+?[\d\s-]{9,}$').hasMatch(value)) {
+      return 'Ingresa un número de teléfono válido';
+    }
+    return null;
+  }
+
+  static String? email(String? value) {
+    if (value == null || value.isEmpty) {
+      return 'Este campo es requerido';
+    }
+    if (!RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$').hasMatch(value)) {
+      return 'Ingresa un correo electrónico válido';
+    }
+    return null;
+  }
 }

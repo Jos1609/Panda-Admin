@@ -140,7 +140,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
         ),
         StatCard(
           title: 'Ingresos Totales',
-          value: '\$${_stats!.totalRevenue.toStringAsFixed(2)}',
+          value: 'S/ ${_stats!.totalRevenue.toStringAsFixed(2)}',
           icon: Icons.attach_money,
           color: Colors.green,
         ),
@@ -240,7 +240,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                         DataCell(Text(product.name)),
                         DataCell(Text(product.quantity.toString())),
                         DataCell(
-                          Text('\$${product.revenue.toStringAsFixed(2)}'),
+                          Text('S/ ${product.revenue.toStringAsFixed(2)}'),
                         ),
                       ],
                     ),

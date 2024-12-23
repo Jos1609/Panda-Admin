@@ -100,10 +100,10 @@ class FilterProvider with ChangeNotifier {
         return false;
       }
 
-      // Filtro por pedidos urgentes (más de 1 hora en estado pendiente)
+      // Filtro por pedidos urgentes (más de 10 MMINUTOS en estado pendiente)
       if (_showOnlyUrgent) {
         final isUrgent = order.status == OrderStatus.pending &&
-            DateTime.now().difference(order.orderDate).inHours >= 1;
+            DateTime.now().difference(order.orderDate).inMinutes >= 10;
         if (!isUrgent) return false;
       }
 

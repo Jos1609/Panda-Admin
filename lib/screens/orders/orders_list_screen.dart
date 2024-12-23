@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:panda_admin/screens/orders/create_order_screen.dart';
 import 'package:panda_admin/utils/screen_enum.dart';
 // ignore: depend_on_referenced_packages
 import 'package:provider/provider.dart';
@@ -40,6 +41,12 @@ class _OrdersListScreenState extends State<OrdersListScreen> {
             icon: const Icon(Icons.add),
             onPressed: () {
               // TODO: Navegar a la pantalla de crear pedido
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => CreateOrderScreen(),
+                ),
+              );
             },
           ),
           IconButton(
@@ -134,7 +141,7 @@ class _OrderCard extends StatelessWidget {
                     'Pedido #${order.id}',
                     style: const TextStyle(
                       fontWeight: FontWeight.bold,
-                      fontSize: 16,
+                      fontSize: 12,
                     ),
                   ),
                   CustomStatusBadge(status: order.status),
@@ -160,7 +167,7 @@ class _OrderCard extends StatelessWidget {
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Text(
-                    'Total: \$${order.total.toStringAsFixed(2)}',
+                    'Total: S/ ${order.total.toStringAsFixed(2)}',
                     style: const TextStyle(
                       fontWeight: FontWeight.bold,
                       fontSize: 16,

@@ -14,16 +14,23 @@ class DashboardService {
       // Este es un ejemplo simplificado
       final ordersSnapshot = await _firestore
           .collection('orders')
-          .where('createdAt', isGreaterThanOrEqualTo: startDate)
-          .where('createdAt', isLessThanOrEqualTo: endDate)
+          .where('orderDate', isGreaterThanOrEqualTo: startDate)
+          .where('orderDate', isLessThanOrEqualTo: endDate)
           .get();
 
-      // Procesar datos y calcular estadísticas
-      // ... (implementar lógica específica)
+      // Calcular la suma de los totales
+      double totalRevenue = 0.0;
+      for (var doc in ordersSnapshot.docs) {
+        // Asegúrate de que el campo 'total' existe y es de tipo numérico
+        final orderTotal = doc.data()['deliveryFee'];
+        if (orderTotal != null && orderTotal is num) {
+          totalRevenue += orderTotal.toDouble();
+        }
+      }
 
       return DashboardStats(
         totalOrders: ordersSnapshot.docs.length,
-        totalRevenue: 0.0, // Calcular desde los datos
+        totalRevenue: totalRevenue, // Calcular desde los datos
         registeredCustomers: 0, // Obtener de Firestore
         activeDrivers: 0, // Obtener de Firestore
         averageDeliveryTime: 0.0, // Calcular desde los datos
