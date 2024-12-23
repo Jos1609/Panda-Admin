@@ -5,15 +5,16 @@ class CustomStatusBadge extends StatelessWidget {
   final OrderStatus status;
 
   const CustomStatusBadge({
-    Key? key,
+    super.key,
     required this.status,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
       decoration: BoxDecoration(
+        // ignore: deprecated_member_use
         color: _getStatusColor().withOpacity(0.1),
         borderRadius: BorderRadius.circular(16),
         border: Border.all(

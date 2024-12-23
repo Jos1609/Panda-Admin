@@ -106,9 +106,8 @@ class _OrderCard extends StatelessWidget {
   final DeliveryOrder order;
 
   const _OrderCard({
-    Key? key,
     required this.order,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {

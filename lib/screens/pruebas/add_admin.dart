@@ -1,9 +1,14 @@
 import 'package:flutter/material.dart';
+// ignore: depend_on_referenced_packages
 import 'package:cloud_firestore/cloud_firestore.dart';
+// ignore: depend_on_referenced_packages
 import 'package:uuid/uuid.dart';
 
 class AddAdminUserScreen extends StatefulWidget {
+  const AddAdminUserScreen({super.key});
+
   @override
+  // ignore: library_private_types_in_public_api
   _AddAdminUserScreenState createState() => _AddAdminUserScreenState();
 }
 
@@ -15,7 +20,7 @@ class _AddAdminUserScreenState extends State<AddAdminUserScreen> {
 
   Future<void> _addAdminUser() async {
     if (_formKey.currentState!.validate()) {
-      final uid = Uuid().v4(); // Generar un ID único para el usuario
+      final uid = const Uuid().v4(); // Generar un ID único para el usuario
 
       final adminUser = {
         'email': _emailController.text.trim(),
@@ -29,8 +34,9 @@ class _AddAdminUserScreenState extends State<AddAdminUserScreen> {
             .doc(uid)
             .set(adminUser);
 
+        // ignore: use_build_context_synchronously
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('¡Usuario admin agregado con éxito!')),
+          const SnackBar(content: Text('¡Usuario admin agregado con éxito!')),
         );
 
         // Limpiar los campos del formulario
@@ -40,6 +46,7 @@ class _AddAdminUserScreenState extends State<AddAdminUserScreen> {
           _selectedRole = 'admin';
         });
       } catch (e) {
+        // ignore: use_build_context_synchronously
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('Error: $e')),
         );
@@ -51,7 +58,7 @@ class _AddAdminUserScreenState extends State<AddAdminUserScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Agregar Usuario Admin'),
+        title: const Text('Agregar Usuario Admin'),
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
@@ -62,7 +69,7 @@ class _AddAdminUserScreenState extends State<AddAdminUserScreen> {
             children: [
               TextFormField(
                 controller: _emailController,
-                decoration: InputDecoration(labelText: 'Correo Electrónico'),
+                decoration: const InputDecoration(labelText: 'Correo Electrónico'),
                 keyboardType: TextInputType.emailAddress,
                 validator: (value) {
                   if (value == null || value.isEmpty) {
@@ -73,8 +80,8 @@ class _AddAdminUserScreenState extends State<AddAdminUserScreen> {
               ),
               DropdownButtonFormField<String>(
                 value: _selectedRole,
-                decoration: InputDecoration(labelText: 'Rol'),
-                items: [
+                decoration: const InputDecoration(labelText: 'Rol'),
+                items: const [
                   DropdownMenuItem(value: 'admin', child: Text('Admin')),
                   DropdownMenuItem(value: 'superadmin', child: Text('Superadmin')),
                 ],
@@ -92,7 +99,7 @@ class _AddAdminUserScreenState extends State<AddAdminUserScreen> {
               ),
               TextFormField(
                 controller: _nameController,
-                decoration: InputDecoration(labelText: 'Nombre'),
+                decoration: const InputDecoration(labelText: 'Nombre'),
                 validator: (value) {
                   if (value == null || value.isEmpty) {
                     return 'Por favor, ingrese un nombre';
@@ -100,10 +107,10 @@ class _AddAdminUserScreenState extends State<AddAdminUserScreen> {
                   return null;
                 },
               ),
-              SizedBox(height: 20),
+              const SizedBox(height: 20),
               ElevatedButton(
                 onPressed: _addAdminUser,
-                child: Text('Agregar Usuario Admin'),
+                child: const Text('Agregar Usuario Admin'),
               ),
             ],
           ),

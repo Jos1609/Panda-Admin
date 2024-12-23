@@ -1,11 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:panda_admin/widgets/custom_status_badge.dart';
+// ignore: depend_on_referenced_packages
 import 'package:provider/provider.dart';
 import '../providers/filter_provider.dart';
 import '../models/order_model.dart';
 
 class OrderFilterBar extends StatelessWidget {
-  const OrderFilterBar({Key? key}) : super(key: key);
+  const OrderFilterBar({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -18,6 +19,7 @@ class OrderFilterBar extends StatelessWidget {
             borderRadius: BorderRadius.circular(12),
             boxShadow: [
               BoxShadow(
+                // ignore: deprecated_member_use
                 color: Colors.black.withOpacity(0.05),
                 blurRadius: 10,
                 offset: const Offset(0, 2),
@@ -98,6 +100,7 @@ class OrderFilterBar extends StatelessWidget {
           filterProvider.setStatusFilter(selected ? status : null);
         },
         backgroundColor: Colors.transparent,
+        // ignore: deprecated_member_use
         selectedColor: Colors.grey.withOpacity(0.2),
       ),
     );
@@ -121,6 +124,7 @@ class OrderFilterBar extends StatelessWidget {
       ),
       onSelected: (_) => onToggle(),
       backgroundColor: Colors.transparent,
+      // ignore: deprecated_member_use
       selectedColor: Colors.grey.withOpacity(0.2),
     );
   }
@@ -130,9 +134,8 @@ class _BuildDateRangePicker extends StatelessWidget {
   final FilterProvider filterProvider;
 
   const _BuildDateRangePicker({
-    Key? key,
     required this.filterProvider,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
