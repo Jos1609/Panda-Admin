@@ -7,11 +7,9 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:panda_admin/providers/filter_provider.dart';
 import 'package:panda_admin/providers/order_provider.dart';
 import 'package:panda_admin/screens/login_screen.dart';
-//import 'package:panda_admin/screens/dashboard_screen.dart';
-//import 'package:panda_admin/screens/orders/orders_list_screen.dart';
+import 'package:panda_admin/screens/dashboard_screen.dart';
+import 'package:panda_admin/screens/orders/orders_list_screen.dart';
 import 'services/auth_service.dart';
-//import 'screens/login_screen.dart';
-import 'screens/home_screen.dart';
 // ignore: depend_on_referenced_packages
 import 'package:provider/provider.dart';
 
@@ -45,8 +43,20 @@ class MyApp extends StatelessWidget {
         textTheme: const TextTheme(
           bodyLarge: TextStyle(color: Color(0xFF1F2937)),
           bodyMedium: TextStyle(color: Color(0xFF4B5563)),
+        ),
       ),
-      ),
+      // Definir las rutas aquí
+      routes: {
+        '/dashboard': (context) => const DashboardScreen(),
+        '/orders': (context) => const OrdersListScreen(),
+        //'/products': (context) => const ProductsScreen(),
+        //'/drivers': (context) => const DriversScreen(),
+        //'/customers': (context) => const CustomersScreen(),
+        //'/locations': (context) => const LocationsScreen(),
+        //'/reports': (context) => const ReportsScreen(),
+        //'/settings': (context) => const SettingsScreen(),
+        '/login': (context) => const LoginScreen(),
+      },
       home: StreamBuilder<User?>(
         stream: AuthService().authStateChanges,
         builder: (context, snapshot) {
@@ -59,10 +69,8 @@ class MyApp extends StatelessWidget {
           }
           
           if (snapshot.hasData) {
-            return const HomeScreen();
+            return const DashboardScreen();
           }
-          //return const OrdersListScreen();
-          //return const DashboardScreen();
           return const LoginScreen();
         },
       ),

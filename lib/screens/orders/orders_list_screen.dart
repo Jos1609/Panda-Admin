@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:panda_admin/utils/screen_enum.dart';
 // ignore: depend_on_referenced_packages
 import 'package:provider/provider.dart';
 import '../../models/order_model.dart';
@@ -6,6 +7,7 @@ import '../../providers/order_provider.dart';
 import '../../providers/filter_provider.dart';
 import '../../widgets/order_filter_bar.dart';
 import '../../widgets/custom_status_badge.dart';
+import '../../widgets/navigation_bar.dart';
 
 class OrdersListScreen extends StatefulWidget {
   const OrdersListScreen({super.key});
@@ -92,6 +94,9 @@ class _OrdersListScreenState extends State<OrdersListScreen> {
             ),
           ),
         ],
+      ),
+      bottomNavigationBar: const NavigationBar1(
+        currentScreen: Screen.orders,
       ),
     );
   }

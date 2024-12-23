@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 // ignore: depend_on_referenced_packages
 import 'package:fl_chart/fl_chart.dart';
+import 'package:panda_admin/utils/screen_enum.dart';
+import 'package:panda_admin/widgets/navigation_bar.dart';
 import '../widgets/stat_card.dart';
 import '../services/dashboard_service.dart';
 import '../models/dashboard_stats.dart';
@@ -67,6 +69,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
       body: _isLoading
           ? const Center(child: CircularProgressIndicator())
           : _buildDashboardContent(),
+    bottomNavigationBar: const NavigationBar1(
+        currentScreen: Screen.dashboard,
+      ),
     );
   }
 
