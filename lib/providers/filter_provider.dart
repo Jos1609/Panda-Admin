@@ -68,10 +68,12 @@ class FilterProvider with ChangeNotifier {
   List<DeliveryOrder> applyFilters(List<DeliveryOrder> orders) {
     return orders.where((order) {
       // Filtro por fecha
-      if (_startDate != null && order.orderDate.isBefore(_startDate!)) {
+      if (_endDate != null &&
+          order.orderDate.isBefore(_endDate!.add(const Duration(days: 0)))) {
         return false;
       }
-      if (_endDate != null && order.orderDate.isAfter(_endDate!)) {
+      if (_endDate != null &&
+          order.orderDate.isAfter(_endDate!.add(const Duration(days: 1)))) {
         return false;
       }
 
@@ -83,14 +85,15 @@ class FilterProvider with ChangeNotifier {
       // Filtro por búsqueda
       if (_searchQuery.isNotEmpty) {
         final searchLower = _searchQuery.toLowerCase();
-        final matchesSearch = order.customerName.toLowerCase().contains(searchLower) ||
-            order.customerAddress.toLowerCase().contains(searchLower) ||
-            order.id.toLowerCase().contains(searchLower);
+        final matchesSearch =
+            order.customerName.toLowerCase().contains(searchLower) ||
+                order.customerAddress.toLowerCase().contains(searchLower) ||
+                order.id.toLowerCase().contains(searchLower);
         if (!matchesSearch) return false;
       }
 
       // Filtro por repartidor
-      if (_deliveryPersonId != null && 
+      if (_deliveryPersonId != null &&
           order.deliveryPersonId != _deliveryPersonId) {
         return false;
       }

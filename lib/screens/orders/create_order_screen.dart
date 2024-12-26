@@ -265,14 +265,7 @@ class _CreateOrderScreenState extends State<CreateOrderScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text(
-              'Costo de Envío',
-              style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-            const SizedBox(height: 16),
+            const SizedBox(height: 14),
             TextFormField(
               initialValue: _deliveryFee.toString(),
               decoration: const InputDecoration(
@@ -301,23 +294,16 @@ class _CreateOrderScreenState extends State<CreateOrderScreen> {
         borderRadius: BorderRadius.circular(12),
       ),
       child: Padding(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.all(14),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text(
-              'Notas Adicionales',
-              style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
             const SizedBox(height: 16),
             CustomTextFieldOrder(
               controller: _notesController,
               label: 'Notas',
               icon: Icons.note,
-              maxLines: 3,
+              maxLines: 2,
             ),
           ],
         ),

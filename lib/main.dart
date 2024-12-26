@@ -49,6 +49,7 @@ class MyApp extends StatelessWidget {
         ),
       ),
       // Definir las rutas aquí
+      
       routes: {
         '/dashboard': (context) => const DashboardScreen(),
         '/orders': (context) => const OrdersListScreen(),
@@ -59,7 +60,9 @@ class MyApp extends StatelessWidget {
         //'/reports': (context) => const ReportsScreen(),
         //'/settings': (context) => const SettingsScreen(),
         '/login': (context) => const LoginScreen(),
+        
       },
+      
       home: StreamBuilder<User?>(
         stream: AuthService().authStateChanges,
         builder: (context, snapshot) {

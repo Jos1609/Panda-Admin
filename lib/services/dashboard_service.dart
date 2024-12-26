@@ -1,4 +1,3 @@
-// ignore: depend_on_referenced_packages
 import 'package:cloud_firestore/cloud_firestore.dart';
 import '../models/dashboard_stats.dart';
 
@@ -10,19 +9,21 @@ class DashboardService {
     required DateTime endDate,
   }) async {
     try {
-      // Implementar lógica para obtener estadísticas de Firestore
-      // Este es un ejemplo simplificado
+      // Convierte las fechas a Timestamps para Firestore
+      final Timestamp startTimestamp = Timestamp.fromDate(startDate);
+      final Timestamp endTimestamp = Timestamp.fromDate(endDate);
+
+      // Realiza la consulta con filtros de rango
       final ordersSnapshot = await _firestore
           .collection('orders')
-          .where('orderDate', isGreaterThanOrEqualTo: startDate)
-          .where('orderDate', isLessThanOrEqualTo: endDate)
+          .where('orderDate', isGreaterThanOrEqualTo: startTimestamp)
+          .where('orderDate', isLessThanOrEqualTo: endTimestamp)
           .get();
 
       // Calcular la suma de los totales
       double totalRevenue = 0.0;
       for (var doc in ordersSnapshot.docs) {
-        // Asegúrate de que el campo 'total' existe y es de tipo numérico
-        final orderTotal = doc.data()['deliveryFee'];
+        final orderTotal = doc.data()['deliveryFee']; // O el campo total si corresponde
         if (orderTotal != null && orderTotal is num) {
           totalRevenue += orderTotal.toDouble();
         }
@@ -30,7 +31,7 @@ class DashboardService {
 
       return DashboardStats(
         totalOrders: ordersSnapshot.docs.length,
-        totalRevenue: totalRevenue, // Calcular desde los datos
+        totalRevenue: totalRevenue,
         registeredCustomers: 0, // Obtener de Firestore
         activeDrivers: 0, // Obtener de Firestore
         averageDeliveryTime: 0.0, // Calcular desde los datos

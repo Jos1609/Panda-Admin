@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:panda_admin/screens/orders/create_order_screen.dart';
+import 'package:panda_admin/utils/navigation.dart';
 import 'package:panda_admin/utils/screen_enum.dart';
+import 'package:panda_admin/widgets/assign_delivery_dialog.dart';
+import 'package:panda_admin/widgets/change_status_dialog.dart';
 // ignore: depend_on_referenced_packages
 import 'package:provider/provider.dart';
 import '../../models/order_model.dart';
@@ -118,17 +121,14 @@ class _OrderCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Card(
-      margin: const EdgeInsets.only(bottom: 16),
-      elevation: 2,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(12),
-      ),
-      child: InkWell(
-        onTap: () {
-          // TODO: Navegar a detalles del pedido
-        },
-        borderRadius: BorderRadius.circular(12),
+    return InkWell( // Envolvemos con InkWell para tener el onTap
+      onTap: () => AppNavigation.goToOrderDetail(context, order.id),
+      child: Card(
+        margin: const EdgeInsets.only(bottom: 16),
+        elevation: 2,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(12),
+        ),
         child: Padding(
           padding: const EdgeInsets.all(16),
           child: Column(
@@ -141,10 +141,61 @@ class _OrderCard extends StatelessWidget {
                     'Pedido #${order.id}',
                     style: const TextStyle(
                       fontWeight: FontWeight.bold,
-                      fontSize: 12,
+                      fontSize: 10,
                     ),
                   ),
-                  CustomStatusBadge(status: order.status),
+                  Row(
+                    children: [
+                      CustomStatusBadge(status: order.status),
+                      PopupMenuButton<String>(
+                        onSelected: (value) {
+                          switch (value) {
+                            case 'details':
+                              AppNavigation.goToOrderDetail(context, order.id);
+                              break;
+                            case 'assign':
+                              _showAssignDeliveryDialog(context, order);
+                              break;
+                            case 'status':
+                              _showChangeStatusDialog(context, order);
+                              break;
+                          }
+                        },
+                        itemBuilder: (context) => [
+                          const PopupMenuItem(
+                            value: 'details',
+                            child: Row(
+                              children: [
+                                Icon(Icons.visibility_outlined),
+                                SizedBox(width: 8),
+                                Text('Ver detalles'),
+                              ],
+                            ),
+                          ),
+                          const PopupMenuItem(
+                            value: 'assign',
+                            child: Row(
+                              children: [
+                                Icon(Icons.person_add_outlined),
+                                SizedBox(width: 8),
+                                Text('Asignar repartidor'),
+                              ],
+                            ),
+                          ),
+                          const PopupMenuItem(
+                            value: 'status',
+                            child: Row(
+                              children: [
+                                Icon(Icons.update_outlined),
+                                SizedBox(width: 8),
+                                Text('Cambiar estado'),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
                 ],
               ),
               const SizedBox(height: 12),
@@ -167,42 +218,18 @@ class _OrderCard extends StatelessWidget {
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Text(
-                    'Total: S/ ${order.total.toStringAsFixed(2)}',
+                    'Total: S/${order.total.toStringAsFixed(2)}',
                     style: const TextStyle(
                       fontWeight: FontWeight.bold,
                       fontSize: 16,
                     ),
                   ),
-                  Row(
-                    children: [
-                      if (!order.isPaid)
-                        const Icon(
-                          Icons.money_off,
-                          color: Colors.red,
-                          size: 20,
-                        ),
-                      const SizedBox(width: 8),
-                      PopupMenuButton<String>(
-                        itemBuilder: (context) => [
-                          const PopupMenuItem(
-                            value: 'details',
-                            child: Text('Ver detalles'),
-                          ),
-                          const PopupMenuItem(
-                            value: 'assign',
-                            child: Text('Asignar repartidor'),
-                          ),
-                          const PopupMenuItem(
-                            value: 'status',
-                            child: Text('Cambiar estado'),
-                          ),
-                        ],
-                        onSelected: (value) {
-                          // TODO: Implementar acciones
-                        },
-                      ),
-                    ],
-                  ),
+                  if (!order.isPaid)
+                    const Icon(
+                      Icons.money_off,
+                      color: Colors.red,
+                      size: 20,
+                    ),
                 ],
               ),
             ],
@@ -212,6 +239,7 @@ class _OrderCard extends StatelessWidget {
     );
   }
 
+  
   Widget _buildInfoRow(IconData icon, String text) {
     return Row(
       children: [
@@ -224,6 +252,77 @@ class _OrderCard extends StatelessWidget {
           ),
         ),
       ],
+    );
+  }
+
+  void _showAssignDeliveryDialog(BuildContext context, DeliveryOrder order) {
+    showDialog(
+      context: context,
+      builder: (context) => AssignDeliveryDialog(
+        currentDeliveryPersonId: order.deliveryPersonId,
+        onDeliveryPersonAssigned: (String deliveryPersonId) async {
+          try {
+            final orderProvider = context.read<OrderProvider>();
+            await orderProvider.assignDeliveryPerson(
+              order.id,
+              deliveryPersonId,
+            );
+            if (context.mounted) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(
+                  content: Text('Repartidor asignado correctamente'),
+                  backgroundColor: Colors.green,
+                ),
+              );
+            }
+          } catch (e) {
+            if (context.mounted) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text('Error al asignar repartidor: $e'),
+                  backgroundColor: Colors.red,
+                ),
+              );
+            }
+          }
+        },
+      ),
+    );
+  }
+
+  void _showChangeStatusDialog(BuildContext context, DeliveryOrder order) {
+    showDialog(
+      context: context,
+      builder: (context) => ChangeStatusDialog(
+        currentStatus: order.status,
+        onStatusChanged: (OrderStatus newStatus) async {
+          try {
+            final orderProvider = context.read<OrderProvider>();
+            await orderProvider.updateOrderStatus(
+              order.id,
+              newStatus,
+              'Admin', // TODO: Obtener el usuario actual
+            );
+            if (context.mounted) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(
+                  content: Text('Estado actualizado correctamente'),
+                  backgroundColor: Colors.green,
+                ),
+              );
+            }
+          } catch (e) {
+            if (context.mounted) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text('Error al actualizar estado: $e'),
+                  backgroundColor: Colors.red,
+                ),
+              );
+            }
+          }
+        },
+      ),
     );
   }
 

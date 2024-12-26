@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:panda_admin/utils/dialog_utils.dart';
 import 'package:provider/provider.dart';
 import '../../models/order_model.dart';
 import '../../providers/order_provider.dart';
@@ -18,10 +19,26 @@ class OrderDetailScreen extends StatelessWidget {
       appBar: AppBar(
         title: Text('Pedido #$orderId'),
         actions: [
-          IconButton(
-            icon: const Icon(Icons.print),
-            onPressed: () {
-              // TODO: Implementar impresión de pedido
+          Consumer<OrderProvider>(
+            builder: (context, orderProvider, child) {
+              final order = orderProvider.orders.firstWhere(
+                (order) => order.id == orderId,
+              );
+
+              return Row(
+                children: [
+                  IconButton(
+                    icon: const Icon(Icons.person_add_outlined),
+                    onPressed: () =>
+                        DialogUtils.showAssignDeliveryDialog(context, order),
+                  ),
+                  IconButton(
+                    icon: const Icon(Icons.update_outlined),
+                    onPressed: () =>
+                        DialogUtils.showChangeStatusDialog(context, order),
+                  ),
+                ],
+              );
             },
           ),
         ],
@@ -88,7 +105,7 @@ class OrderDetailScreen extends StatelessWidget {
                   Text(
                     'Pedido #${order.id}',
                     style: const TextStyle(
-                      fontSize: 20,
+                      fontSize: 11,
                       fontWeight: FontWeight.bold,
                     ),
                   ),
@@ -205,25 +222,77 @@ class OrderDetailScreen extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 16),
+          const Row(
+            children: [
+              Expanded(
+                flex: 4,
+                child: Text(
+                  'Producto',
+                  style: TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 16,
+                  ),
+                ),
+              ),
+              Expanded(
+                flex: 2,
+                child: Text(
+                  'Cantidad',
+                  style: TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 16,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+              ),
+              Expanded(
+                flex: 2,
+                child: Text(
+                  'Precio',
+                  style: TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 16,
+                  ),
+                  textAlign: TextAlign.end,
+                ),
+              ),
+            ],
+          ),
+          const Divider(),
           ListView.builder(
             shrinkWrap: true,
             physics: const NeverScrollableScrollPhysics(),
             itemCount: order.items.length,
             itemBuilder: (context, index) {
               final item = order.items[index];
-              return ListTile(
-                contentPadding: EdgeInsets.zero,
-                title: Text(
-                  item.name,
-                  style: const TextStyle(fontWeight: FontWeight.w500),
-                ),
-                subtitle: Text(
-                  item.notes ?? '',
-                  style: TextStyle(color: Colors.grey[600]),
-                ),
-                trailing: Text(
-                  '${item.quantity}x S/ ${item.price.toStringAsFixed(2)}',
-                  style: const TextStyle(fontWeight: FontWeight.w500),
+              return Padding(
+                padding: const EdgeInsets.symmetric(vertical: 8.0),
+                child: Row(
+                  children: [
+                    Expanded(
+                      flex: 4,
+                      child: Text(
+                        item.name,
+                        style: const TextStyle(fontWeight: FontWeight.w500),
+                      ),
+                    ),
+                    Expanded(
+                      flex: 2,
+                      child: Text(
+                        item.quantity.toString(),
+                        textAlign: TextAlign.center,
+                        style: const TextStyle(fontWeight: FontWeight.w500),
+                      ),
+                    ),
+                    Expanded(
+                      flex: 2,
+                      child: Text(
+                        'S/ ${item.price.toStringAsFixed(2)}',
+                        textAlign: TextAlign.end,
+                        style: const TextStyle(fontWeight: FontWeight.w500),
+                      ),
+                    ),
+                  ],
                 ),
               );
             },
@@ -251,8 +320,6 @@ class OrderDetailScreen extends StatelessWidget {
       child: Column(
         children: [
           _buildSummaryRow('Subtotal', order.subtotal),
-          const SizedBox(height: 8),
-          _buildSummaryRow('Impuestos', order.tax),
           const SizedBox(height: 8),
           _buildSummaryRow('Delivery', order.deliveryFee),
           const Divider(height: 24),
@@ -367,39 +434,44 @@ class OrderDetailScreen extends StatelessWidget {
           ),
         ],
       ),
-      child: Row(
-        children: [
-          Expanded(
-            child: ElevatedButton(
-              onPressed: () {
-                // TODO: Implementar cambio de estado
-              },
-              style: ElevatedButton.styleFrom(
-                padding: const EdgeInsets.symmetric(vertical: 16),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
+      child: Consumer<OrderProvider>(
+        builder: (context, orderProvider, child) {
+          final order = orderProvider.orders.firstWhere(
+            (order) => order.id == orderId,
+          );
+
+          return Row(
+            children: [
+              Expanded(
+                child: ElevatedButton(
+                  onPressed: () =>
+                      DialogUtils.showChangeStatusDialog(context, order),
+                  style: ElevatedButton.styleFrom(
+                    padding: const EdgeInsets.symmetric(vertical: 16),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
+                  child: const Text('Cambiar Estado'),
                 ),
               ),
-              child: const Text('Cambiar Estado'),
-            ),
-          ),
-          const SizedBox(width: 16),
-          Expanded(
-            child: OutlinedButton(
-              onPressed: () {
-                // TODO: Implementar asignación de repartidor
-                
-              },
-              style: OutlinedButton.styleFrom(
-                padding: const EdgeInsets.symmetric(vertical: 16),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
+              const SizedBox(width: 16),
+              Expanded(
+                child: OutlinedButton(
+                  onPressed: () =>
+                      DialogUtils.showAssignDeliveryDialog(context, order),
+                  style: OutlinedButton.styleFrom(
+                    padding: const EdgeInsets.symmetric(vertical: 16),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
+                  child: const Text('Asignar Repartidor'),
                 ),
               ),
-              child: const Text('Asignar Repartidor'),
-            ),
-          ),
-        ],
+            ],
+          );
+        },
       ),
     );
   }
@@ -443,7 +515,7 @@ class OrderDetailScreen extends StatelessWidget {
           ),
         ),
         Text(
-          'S/ S/ {amount.toStringAsFixed(2)}',
+          'S/ ${amount.toStringAsFixed(2)}', // Formatea el monto con dos decimales
           style: TextStyle(
             fontWeight: isTotal ? FontWeight.bold : FontWeight.normal,
             fontSize: isTotal ? 18 : 14,
