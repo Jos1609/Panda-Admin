@@ -240,7 +240,7 @@ Widget _buildOrderItems(DeliveryOrder order) {
                 'Cant',
                 style: TextStyle(
                   fontWeight: FontWeight.bold,
-                  fontSize: 16,
+                  fontSize: 12,
                 ),
                 textAlign: TextAlign.center,
               ),
@@ -251,7 +251,7 @@ Widget _buildOrderItems(DeliveryOrder order) {
                 'Precio',
                 style: TextStyle(
                   fontWeight: FontWeight.bold,
-                  fontSize: 16,
+                  fontSize: 12,
                 ),
                 textAlign: TextAlign.end,
               ),
@@ -262,7 +262,7 @@ Widget _buildOrderItems(DeliveryOrder order) {
                 'Subtotal',
                 style: TextStyle(
                   fontWeight: FontWeight.bold,
-                  fontSize: 16,
+                  fontSize: 12,
                 ),
                 textAlign: TextAlign.end,
               ),
@@ -299,7 +299,7 @@ Widget _buildOrderItems(DeliveryOrder order) {
                   Expanded(
                     flex: 2,
                     child: Text(
-                      'S/ ${item.price.toStringAsFixed(2)}',
+                      item.price.toStringAsFixed(2),
                       textAlign: TextAlign.end,
                       style: const TextStyle(fontWeight: FontWeight.w500),
                     ),
@@ -307,7 +307,7 @@ Widget _buildOrderItems(DeliveryOrder order) {
                   Expanded(
                     flex: 2,
                     child: Text(
-                      'S/ ${subtotal.toStringAsFixed(2)}',
+                      subtotal.toStringAsFixed(2),
                       textAlign: TextAlign.end,
                       style: const TextStyle(fontWeight: FontWeight.w500),
                     ),
