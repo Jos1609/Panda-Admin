@@ -196,111 +196,131 @@ class OrderDetailScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildOrderItems(DeliveryOrder order) {
-    return Container(
-      margin: const EdgeInsets.all(16),
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.05),
-            blurRadius: 10,
-            offset: const Offset(0, 2),
+Widget _buildOrderItems(DeliveryOrder order) {
+  return Container(
+    margin: const EdgeInsets.all(16),
+    padding: const EdgeInsets.all(16),
+    decoration: BoxDecoration(
+      color: Colors.white,
+      borderRadius: BorderRadius.circular(12),
+      boxShadow: [
+        BoxShadow(
+          color: Colors.black.withOpacity(0.05),
+          blurRadius: 10,
+          offset: const Offset(0, 2),
+        ),
+      ],
+    ),
+    child: Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Text(
+          'Productos',
+          style: TextStyle(
+            fontSize: 18,
+            fontWeight: FontWeight.bold,
           ),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const Text(
-            'Productos',
-            style: TextStyle(
-              fontSize: 18,
-              fontWeight: FontWeight.bold,
+        ),
+        const SizedBox(height: 16),
+        const Row(
+          children: [
+            Expanded(
+              flex: 4,
+              child: Text(
+                'Producto',
+                style: TextStyle(
+                  fontWeight: FontWeight.bold,
+                  fontSize: 16,
+                ),
+              ),
             ),
-          ),
-          const SizedBox(height: 16),
-          const Row(
-            children: [
-              Expanded(
-                flex: 4,
-                child: Text(
-                  'Producto',
-                  style: TextStyle(
-                    fontWeight: FontWeight.bold,
-                    fontSize: 16,
-                  ),
+            Expanded(
+              flex: 2,
+              child: Text(
+                'Cant',
+                style: TextStyle(
+                  fontWeight: FontWeight.bold,
+                  fontSize: 16,
                 ),
+                textAlign: TextAlign.center,
               ),
-              Expanded(
-                flex: 2,
-                child: Text(
-                  'Cantidad',
-                  style: TextStyle(
-                    fontWeight: FontWeight.bold,
-                    fontSize: 16,
-                  ),
-                  textAlign: TextAlign.center,
+            ),
+            Expanded(
+              flex: 2,
+              child: Text(
+                'Precio',
+                style: TextStyle(
+                  fontWeight: FontWeight.bold,
+                  fontSize: 16,
                 ),
+                textAlign: TextAlign.end,
               ),
-              Expanded(
-                flex: 2,
-                child: Text(
-                  'Precio',
-                  style: TextStyle(
-                    fontWeight: FontWeight.bold,
-                    fontSize: 16,
-                  ),
-                  textAlign: TextAlign.end,
+            ),
+            Expanded(
+              flex: 2,
+              child: Text(
+                'Subtotal',
+                style: TextStyle(
+                  fontWeight: FontWeight.bold,
+                  fontSize: 16,
                 ),
+                textAlign: TextAlign.end,
               ),
-            ],
-          ),
-          const Divider(),
-          ListView.builder(
-            shrinkWrap: true,
-            physics: const NeverScrollableScrollPhysics(),
-            itemCount: order.items.length,
-            itemBuilder: (context, index) {
-              final item = order.items[index];
-              return Padding(
-                padding: const EdgeInsets.symmetric(vertical: 8.0),
-                child: Row(
-                  children: [
-                    Expanded(
-                      flex: 4,
-                      child: Text(
-                        item.name,
-                        style: const TextStyle(fontWeight: FontWeight.w500),
-                      ),
+            ),
+          ],
+        ),
+        const Divider(),
+        ListView.builder(
+          shrinkWrap: true,
+          physics: const NeverScrollableScrollPhysics(),
+          itemCount: order.items.length,
+          itemBuilder: (context, index) {
+            final item = order.items[index];
+            final subtotal = item.price * item.quantity; // Calcula el subtotal
+            return Padding(
+              padding: const EdgeInsets.symmetric(vertical: 8.0),
+              child: Row(
+                children: [
+                  Expanded(
+                    flex: 4,
+                    child: Text(
+                      item.name,
+                      style: const TextStyle(fontWeight: FontWeight.w500),
                     ),
-                    Expanded(
-                      flex: 2,
-                      child: Text(
-                        item.quantity.toString(),
-                        textAlign: TextAlign.center,
-                        style: const TextStyle(fontWeight: FontWeight.w500),
-                      ),
+                  ),
+                  Expanded(
+                    flex: 2,
+                    child: Text(
+                      item.quantity.toString(),
+                      textAlign: TextAlign.center,
+                      style: const TextStyle(fontWeight: FontWeight.w500),
                     ),
-                    Expanded(
-                      flex: 2,
-                      child: Text(
-                        'S/ ${item.price.toStringAsFixed(2)}',
-                        textAlign: TextAlign.end,
-                        style: const TextStyle(fontWeight: FontWeight.w500),
-                      ),
+                  ),
+                  Expanded(
+                    flex: 2,
+                    child: Text(
+                      'S/ ${item.price.toStringAsFixed(2)}',
+                      textAlign: TextAlign.end,
+                      style: const TextStyle(fontWeight: FontWeight.w500),
                     ),
-                  ],
-                ),
-              );
-            },
-          ),
-        ],
-      ),
-    );
-  }
+                  ),
+                  Expanded(
+                    flex: 2,
+                    child: Text(
+                      'S/ ${subtotal.toStringAsFixed(2)}',
+                      textAlign: TextAlign.end,
+                      style: const TextStyle(fontWeight: FontWeight.w500),
+                    ),
+                  ),
+                ],
+              ),
+            );
+          },
+        ),
+      ],
+    ),
+  );
+}
 
   Widget _buildOrderSummary(DeliveryOrder order) {
     return Container(
