@@ -6,10 +6,10 @@ class ChangeStatusDialog extends StatelessWidget {
   final Function(OrderStatus) onStatusChanged;
 
   const ChangeStatusDialog({
-    Key? key,
+    super.key,
     required this.currentStatus,
     required this.onStatusChanged,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -53,6 +53,7 @@ class ChangeStatusDialog extends StatelessWidget {
           vertical: 12,
         ),
         decoration: BoxDecoration(
+          // ignore: deprecated_member_use
           color: isSelected ? Colors.blue.withOpacity(0.1) : null,
           borderRadius: BorderRadius.circular(8),
         ),

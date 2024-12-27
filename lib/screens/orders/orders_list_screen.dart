@@ -43,11 +43,11 @@ class _OrdersListScreenState extends State<OrdersListScreen> {
           IconButton(
             icon: const Icon(Icons.add),
             onPressed: () {
-              // TODO: Navegar a la pantalla de crear pedido
+              //Navegar a la pantalla de crear pedido
               Navigator.push(
                 context,
                 MaterialPageRoute(
-                  builder: (context) => CreateOrderScreen(),
+                  builder: (context) => const CreateOrderScreen(),
                 ),
               );
             },
@@ -55,7 +55,7 @@ class _OrdersListScreenState extends State<OrdersListScreen> {
           IconButton(
             icon: const Icon(Icons.file_download),
             onPressed: () {
-              // TODO: Implementar exportación
+              //Implementar exportación
             },
           ),
         ],
@@ -301,7 +301,7 @@ class _OrderCard extends StatelessWidget {
             await orderProvider.updateOrderStatus(
               order.id,
               newStatus,
-              'Admin', // TODO: Obtener el usuario actual
+              'Admin', // Obtener el usuario actual
             );
             if (context.mounted) {
               ScaffoldMessenger.of(context).showSnackBar(

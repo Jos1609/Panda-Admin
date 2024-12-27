@@ -1,6 +1,7 @@
 // ignore: depend_on_referenced_packages
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:panda_admin/models/order_item_model.dart';
+import 'package:panda_admin/models/payment_model.dart';
 import 'package:panda_admin/models/status_log_model.dart';
 
 enum OrderStatus {
@@ -27,6 +28,8 @@ class DeliveryOrder {  // Cambiamos el nombre de Order a DeliveryOrder
   String? notes;
   bool isPaid;
   final List<StatusLog> statusHistory;
+  final PaymentMethod? paymentMethod;
+  String? paymentReference;
   
   DeliveryOrder({
     required this.id,
@@ -44,6 +47,8 @@ class DeliveryOrder {  // Cambiamos el nombre de Order a DeliveryOrder
     this.notes,
     this.isPaid = false,
     required this.statusHistory,
+    this.paymentMethod,
+    this.paymentReference,
   });
 
   // Factory constructor para crear desde Firestore
@@ -72,6 +77,14 @@ class DeliveryOrder {  // Cambiamos el nombre de Order a DeliveryOrder
       statusHistory: (data['statusHistory'] as List)
           .map((log) => StatusLog.fromMap(log))
           .toList(),
+      paymentMethod: data['paymentMethod'] != null
+    ? PaymentMethod.values.cast<PaymentMethod?>().firstWhere(
+        (e) => e?.toString() == 'PaymentMethod.${data['paymentMethod']}',
+        orElse: () => null, 
+      )
+    : null,
+paymentReference: data['paymentReference'],
+
     );
   }
 
@@ -92,6 +105,8 @@ class DeliveryOrder {  // Cambiamos el nombre de Order a DeliveryOrder
       'notes': notes,
       'isPaid': isPaid,
       'statusHistory': statusHistory.map((log) => log.toMap()).toList(),
+      'paymentMethod': paymentMethod?.toString().split('.').last,
+      'paymentReference': paymentReference,
     };
   }
 
@@ -106,4 +121,5 @@ class DeliveryOrder {  // Cambiamos el nombre de Order a DeliveryOrder
       ),
     );
   }
+  
 }

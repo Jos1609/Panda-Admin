@@ -1,3 +1,4 @@
+// ignore: depend_on_referenced_packages
 import 'package:cloud_firestore/cloud_firestore.dart';
 import '../models/delivery_person_model.dart';
 import '../utils/app_exception.dart';

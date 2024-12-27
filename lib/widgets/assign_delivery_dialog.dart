@@ -125,6 +125,7 @@ class _AssignDeliveryDialogState extends State<AssignDeliveryDialog> {
           vertical: 12,
         ),
         decoration: BoxDecoration(
+          // ignore: deprecated_member_use
           color: isSelected ? Colors.blue.withOpacity(0.1) : null,
           borderRadius: BorderRadius.circular(8),
         ),

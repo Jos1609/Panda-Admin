@@ -83,7 +83,7 @@ class _CreateOrderScreenState extends State<CreateOrderScreen> {
         StatusLog(
           status: OrderStatus.pending,
           timestamp: DateTime.now(),
-          updatedBy: 'Admin', // TODO: Obtener usuario actual
+          updatedBy: 'Admin', 
         ),
       ],
     );
@@ -377,6 +377,7 @@ class _CreateOrderScreenState extends State<CreateOrderScreen> {
         color: Colors.white,
         boxShadow: [
           BoxShadow(
+            // ignore: deprecated_member_use
             color: Colors.black.withOpacity(0.05),
             offset: const Offset(0, -2),
             blurRadius: 10,

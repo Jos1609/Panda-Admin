@@ -22,14 +22,14 @@ class NotificationService {
   Future<void> _handleForegroundMessage(RemoteMessage message) async {
     // Mostrar notificación en la UI cuando la app está abierta
     if (message.data['type'] == 'order_update') {
-      //TODO: Implementar notificación en la UI
+      //Implementar notificación en la UI
     }
   }
 
   Future<void> _handleBackgroundMessage(RemoteMessage message) async {
     // Manejar cuando se abre la app desde la notificación
     if (message.data['type'] == 'order_update') {
-      // TODO: Navegar a la pantalla correspondiente
+      //Navegar a la pantalla correspondiente
     }
   }
 

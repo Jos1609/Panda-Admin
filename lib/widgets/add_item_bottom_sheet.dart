@@ -7,9 +7,9 @@ class AddItemBottomSheet extends StatefulWidget {
   final Function(OrderItem) onItemAdded;
 
   const AddItemBottomSheet({
-    Key? key,
+    super.key,
     required this.onItemAdded,
-  }) : super(key: key);
+  });
 
   @override
   State<AddItemBottomSheet> createState() => _AddItemBottomSheetState();

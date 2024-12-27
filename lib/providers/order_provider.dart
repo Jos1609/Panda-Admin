@@ -1,6 +1,7 @@
 import 'package:flutter/foundation.dart';
 // ignore: depend_on_referenced_packages
 import 'package:collection/collection.dart';
+import 'package:panda_admin/models/payment_model.dart';
 import '../models/order_model.dart';
 import '../services/order_service.dart';
 import '../services/delivery_service.dart';
@@ -210,4 +211,39 @@ class OrderProvider with ChangeNotifier {
     _error = null;
     notifyListeners();
   }
+    Future<void> updatePaymentStatus(String orderId, bool isPaid) async {
+    try {
+      _setLoading(true);
+      await _orderService.updatePaymentStatus(orderId, isPaid);
+      _error = null;
+    } on AppException catch (e) {
+      _error = e.message;
+    } finally {
+      _setLoading(false);
+      notifyListeners();
+    }
+  }
+  // Agregar este método a la clase OrderProvider
+Future<void> updatePaymentInfo(
+  String orderId,
+  PaymentMethod method,
+  String? reference,
+  bool isPaid,
+) async {
+  try {
+    _setLoading(true);
+    await _orderService.updatePaymentInfo(
+      orderId,
+      method,
+      reference,
+      isPaid,
+    );
+    _error = null;
+  } on AppException catch (e) {
+    _error = e.message;
+  } finally {
+    _setLoading(false);
+    notifyListeners();
+  }
+}
 }

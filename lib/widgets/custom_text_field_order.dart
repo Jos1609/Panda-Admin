@@ -9,14 +9,14 @@ class CustomTextFieldOrder extends StatelessWidget {
   final String? Function(String?)? validator;
 
   const CustomTextFieldOrder({
-    Key? key,
+    super.key,
     required this.controller,
     required this.label,
     required this.icon,
     this.keyboardType,
     this.maxLines = 1,
     this.validator,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {

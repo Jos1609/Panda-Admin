@@ -1,5 +1,6 @@
 // ignore: depend_on_referenced_packages
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:panda_admin/models/payment_model.dart';
 import '../models/order_model.dart';
 import '../utils/app_exception.dart';
 
@@ -168,4 +169,21 @@ class OrderService {
     }
     return distribution;
   }
+  // Agregar este método a la clase OrderService
+Future<void> updatePaymentInfo(
+  String orderId,
+  PaymentMethod method,
+  String? reference,
+  bool isPaid,
+) async {
+  try {
+    await _firestore.collection(_collection).doc(orderId).update({
+      'paymentMethod': method.toString().split('.').last,
+      'paymentReference': reference,
+      'isPaid': isPaid,
+    });
+  } catch (e) {
+    throw AppException('Error al actualizar información de pago: $e');
+  }
+}
 }
