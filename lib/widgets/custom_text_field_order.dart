@@ -4,19 +4,21 @@ class CustomTextFieldOrder extends StatelessWidget {
   final TextEditingController controller;
   final String label;
   final IconData icon;
-  final TextInputType? keyboardType;
-  final int? maxLines;
+  final TextInputType keyboardType;
   final String? Function(String?)? validator;
+  final int? maxLines;
+  final Function(String)? onChanged; // Agregar este parámetro
 
   const CustomTextFieldOrder({
-    super.key,
+    Key? key,
     required this.controller,
     required this.label,
     required this.icon,
-    this.keyboardType,
-    this.maxLines = 1,
+    this.keyboardType = TextInputType.text,
     this.validator,
-  });
+    this.maxLines = 1,
+    this.onChanged, // Agregar este parámetro
+  }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -30,8 +32,9 @@ class CustomTextFieldOrder extends StatelessWidget {
         ),
       ),
       keyboardType: keyboardType,
-      maxLines: maxLines,
       validator: validator,
+      maxLines: maxLines,
+      onChanged: onChanged, // Agregar esta línea
     );
   }
 }

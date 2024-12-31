@@ -1,4 +1,6 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:panda_admin/models/customer_model.dart';
 import 'package:panda_admin/models/order_item_model.dart';
 import 'package:panda_admin/models/status_log_model.dart';
 import 'package:panda_admin/widgets/custom_text_field_order.dart';
@@ -24,6 +26,9 @@ class _CreateOrderScreenState extends State<CreateOrderScreen> {
   final _notesController = TextEditingController();
   final List<OrderItem> _items = [];
   double _deliveryFee = 0.0;
+  List<Customer> _suggestions = [];
+  bool _showSuggestions = false;
+  Timer? _debounceTimer;
 
   @override
   void dispose() {
@@ -31,6 +36,7 @@ class _CreateOrderScreenState extends State<CreateOrderScreen> {
     _customerPhoneController.dispose();
     _customerAddressController.dispose();
     _notesController.dispose();
+    _debounceTimer?.cancel();
     super.dispose();
   }
 
@@ -64,7 +70,7 @@ class _CreateOrderScreenState extends State<CreateOrderScreen> {
       0,
       (sum, item) => sum + (item.price * item.quantity),
     );
-    final tax = subtotal * 0 ; // 18% de impuesto
+    final tax = subtotal * 0; // 18% de impuesto
 
     final order = DeliveryOrder(
       id: DateTime.now().millisecondsSinceEpoch.toString(),
@@ -83,7 +89,7 @@ class _CreateOrderScreenState extends State<CreateOrderScreen> {
         StatusLog(
           status: OrderStatus.pending,
           timestamp: DateTime.now(),
-          updatedBy: 'Admin', 
+          updatedBy: 'Admin',
         ),
       ],
     );
@@ -157,27 +163,78 @@ class _CreateOrderScreenState extends State<CreateOrderScreen> {
               ),
             ),
             const SizedBox(height: 16),
-            CustomTextFieldOrder(
-              controller: _customerNameController,
-              label: 'Nombre',
-              icon: Icons.person,
-              validator: Validators.required,
-            ),
-            const SizedBox(height: 12),
-            CustomTextFieldOrder(
-              controller: _customerPhoneController,
-              label: 'Teléfono',
-              icon: Icons.phone,
-              keyboardType: TextInputType.phone,
-              validator: Validators.phone,
-            ),
-            const SizedBox(height: 12),
-            CustomTextFieldOrder(
-              controller: _customerAddressController,
-              label: 'Dirección',
-              icon: Icons.location_on,
-              maxLines: 2,
-              validator: Validators.required,
+            Stack(
+              children: [
+                Column(
+                  children: [
+                    CustomTextFieldOrder(
+                      controller: _customerNameController,
+                      label: 'Nombre',
+                      icon: Icons.person,
+                      validator: Validators.required,
+                      onChanged: _onCustomerNameChanged,
+                    ),
+                    const SizedBox(height: 12),
+                    CustomTextFieldOrder(
+                      controller: _customerPhoneController,
+                      label: 'Teléfono',
+                      icon: Icons.phone,
+                      keyboardType: TextInputType.phone,
+                      validator: Validators.phone,
+                    ),
+                    const SizedBox(height: 12),
+                    CustomTextFieldOrder(
+                      controller: _customerAddressController,
+                      label: 'Dirección',
+                      icon: Icons.location_on,
+                      maxLines: 2,
+                      validator: Validators.required,
+                    ),
+                  ],
+                ),
+                if (_showSuggestions)
+                  Positioned(
+                    top: 60, // Ajusta esta posición según necesites
+                    left: 0,
+                    right: 0,
+                    child: Material(
+                      elevation: 4,
+                      borderRadius: BorderRadius.circular(8),
+                      child: Container(
+                        constraints: const BoxConstraints(maxHeight: 200),
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: ListView.builder(
+                          shrinkWrap: true,
+                          padding: EdgeInsets.zero,
+                          itemCount: _suggestions.length,
+                          itemBuilder: (context, index) {
+                            final customer = _suggestions[index];
+                            return ListTile(
+                              dense: true,
+                              title: Text(
+                                customer.name,
+                                style: const TextStyle(
+                                    fontWeight: FontWeight.bold),
+                              ),
+                              subtitle: Text(
+                                '${customer.phone}\n${customer.address}',
+                                style: TextStyle(
+                                  color: Colors.grey[600],
+                                  fontSize: 12,
+                                ),
+                              ),
+                              isThreeLine: true,
+                              onTap: () => _selectCustomer(customer),
+                            );
+                          },
+                        ),
+                      ),
+                    ),
+                  ),
+              ],
             ),
           ],
         ),
@@ -395,5 +452,52 @@ class _CreateOrderScreenState extends State<CreateOrderScreen> {
         child: const Text('Crear Pedido'),
       ),
     );
+  }
+
+// Método para buscar clientes con debounce
+  void _onCustomerNameChanged(String value) {
+    // Cancelar el timer anterior si existe
+    _debounceTimer?.cancel();
+
+    if (value.isEmpty) {
+      setState(() {
+        _showSuggestions = false;
+        _suggestions = [];
+      });
+      return;
+    }
+
+    // Crear un nuevo timer para hacer la búsqueda
+    _debounceTimer = Timer(const Duration(milliseconds: 500), () async {
+      try {
+        final results =
+            await context.read<OrderProvider>().searchCustomers(value);
+        if (mounted) {
+          setState(() {
+            _suggestions = results.map((map) => Customer.fromMap(map)).toList();
+            _showSuggestions = _suggestions.isNotEmpty;
+          });
+        }
+      } catch (e) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Error al buscar clientes: $e'),
+              backgroundColor: Colors.red,
+            ),
+          );
+        }
+      }
+    });
+  }
+
+  void _selectCustomer(Customer customer) {
+    setState(() {
+      _customerNameController.text = customer.name;
+      _customerPhoneController.text = customer.phone;
+      _customerAddressController.text = customer.address;
+      _showSuggestions = false;
+      _suggestions.clear();
+    });
   }
 }

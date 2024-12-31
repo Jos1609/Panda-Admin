@@ -221,7 +221,7 @@ class OrderDetailScreen extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           const Text(
-            'Productos',
+            'Detalle del pedido',
             style: TextStyle(
               fontSize: 18,
               fontWeight: FontWeight.bold,
@@ -414,28 +414,7 @@ class OrderDetailScreen extends StatelessWidget {
                   ),
                 ],
               ),
-            ),
-          ElevatedButton.icon(
-            onPressed: () => _showPaymentMethodDialog(context, order),
-            icon: Icon(
-              order.isPaid ? Icons.money_off : Icons.attach_money,
-              size: 20,
-            ),
-            label: Text(
-              order.isPaid ? 'Cambiar Método de Pago' : 'Registrar Pago',
-            ),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: order.isPaid ? Colors.blue : Colors.green,
-              foregroundColor: Colors.white,
-              padding: const EdgeInsets.symmetric(
-                horizontal: 16,
-                vertical: 8,
-              ),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(8),
-              ),
-            ),
-          ),
+            ),         
 
 // Si hay método de pago, mostramos la información
           if (order.paymentMethod != null)
@@ -478,6 +457,27 @@ class OrderDetailScreen extends StatelessWidget {
                 ],
               ),
             ),
+            ElevatedButton.icon(
+            onPressed: () => _showPaymentMethodDialog(context, order),
+            icon: Icon(
+              order.isPaid ? Icons.money_off : Icons.attach_money,
+              size: 20,
+            ),
+            label: Text(
+              order.isPaid ? 'Cambiar Método de Pago' : 'Registrar Pago',
+            ),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: order.isPaid ? Colors.blue : Colors.green,
+              foregroundColor: Colors.white,
+              padding: const EdgeInsets.symmetric(
+                horizontal: 16,
+                vertical: 8,
+              ),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(8),
+              ),
+            ),
+          ),
         ],
       ),
     );

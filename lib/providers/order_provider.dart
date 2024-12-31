@@ -6,9 +6,11 @@ import '../models/order_model.dart';
 import '../services/order_service.dart';
 import '../services/delivery_service.dart';
 import '../utils/app_exception.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 class OrderProvider with ChangeNotifier {
   final OrderService _orderService = OrderService();
+  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
   // Estado
   List<DeliveryOrder> _orders = [];
@@ -84,7 +86,6 @@ class OrderProvider with ChangeNotifier {
     }
   }
 
-
   // Método para actualizar estado con validaciones
   Future<void> updateOrderStatus(
     String orderId,
@@ -93,9 +94,9 @@ class OrderProvider with ChangeNotifier {
   ) async {
     try {
       _setLoading(true);
-      
+
       final order = _orders.firstWhere((o) => o.id == orderId);
-      
+
       // Validaciones de cambio de estado
       if (order.status == OrderStatus.cancelled) {
         throw AppException(
@@ -103,7 +104,7 @@ class OrderProvider with ChangeNotifier {
         );
       }
 
-      if (order.status == OrderStatus.delivered && 
+      if (order.status == OrderStatus.delivered &&
           newStatus != OrderStatus.cancelled) {
         throw AppException(
           'No se puede cambiar el estado de un pedido entregado',
@@ -111,7 +112,7 @@ class OrderProvider with ChangeNotifier {
       }
 
       // Si se está cancelando, liberamos al repartidor
-      if (newStatus == OrderStatus.cancelled && 
+      if (newStatus == OrderStatus.cancelled &&
           order.deliveryPersonId != null) {
         final deliveryService = DeliveryService();
         await deliveryService.removeOrderFromDeliveryPerson(
@@ -170,6 +171,28 @@ class OrderProvider with ChangeNotifier {
     }
   }
 
+  Future<List<Map<String, dynamic>>> searchCustomers(String query) async {
+    try {
+      final QuerySnapshot ordersSnapshot = await _firestore
+          .collection('orders')
+          .where('customerName', isGreaterThanOrEqualTo: query)
+          .where('customerName', isLessThanOrEqualTo: '$query\uf8ff')
+          .get();
+
+      return ordersSnapshot.docs.map((doc) {
+        final data = doc.data() as Map<String, dynamic>;
+        return {
+          'name': data['customerName'] ?? '',
+          'phone': data['customerPhone'] ?? '',
+          'address': data['customerAddress'] ?? '',
+        };
+      }).toList();
+    } catch (e) {
+      print('Error searching customers: $e');
+      return [];
+    }
+  }
+
   // Manejo de filtros
   void setDateRange(DateTime? start, DateTime? end) {
     _startDate = start;
@@ -211,7 +234,8 @@ class OrderProvider with ChangeNotifier {
     _error = null;
     notifyListeners();
   }
-    Future<void> updatePaymentStatus(String orderId, bool isPaid) async {
+
+  Future<void> updatePaymentStatus(String orderId, bool isPaid) async {
     try {
       _setLoading(true);
       await _orderService.updatePaymentStatus(orderId, isPaid);
@@ -223,27 +247,28 @@ class OrderProvider with ChangeNotifier {
       notifyListeners();
     }
   }
+
   // Agregar este método a la clase OrderProvider
-Future<void> updatePaymentInfo(
-  String orderId,
-  PaymentMethod method,
-  String? reference,
-  bool isPaid,
-) async {
-  try {
-    _setLoading(true);
-    await _orderService.updatePaymentInfo(
-      orderId,
-      method,
-      reference,
-      isPaid,
-    );
-    _error = null;
-  } on AppException catch (e) {
-    _error = e.message;
-  } finally {
-    _setLoading(false);
-    notifyListeners();
+  Future<void> updatePaymentInfo(
+    String orderId,
+    PaymentMethod method,
+    String? reference,
+    bool isPaid,
+  ) async {
+    try {
+      _setLoading(true);
+      await _orderService.updatePaymentInfo(
+        orderId,
+        method,
+        reference,
+        isPaid,
+      );
+      _error = null;
+    } on AppException catch (e) {
+      _error = e.message;
+    } finally {
+      _setLoading(false);
+      notifyListeners();
+    }
   }
-}
 }

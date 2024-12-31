@@ -11,6 +11,9 @@ class FilterProvider with ChangeNotifier {
   bool _showOnlyUnpaid = false;
   bool _showOnlyUrgent = false;
 
+  // Lista de pedidos completa
+  List<DeliveryOrder> _allOrders = [];
+
   // Getters
   DateTime? get startDate => _startDate;
   DateTime? get endDate => _endDate;
@@ -20,7 +23,20 @@ class FilterProvider with ChangeNotifier {
   bool get showOnlyUnpaid => _showOnlyUnpaid;
   bool get showOnlyUrgent => _showOnlyUrgent;
 
+  /// Getter para obtener pedidos filtrados
+  List<DeliveryOrder> get filteredOrders => applyFilters(_allOrders);
+
+  /// Getter para calcular el total de los pedidos filtrados
+  double get filteredOrdersTotal {
+    return filteredOrders.fold(0.0, (total, order) => total + order.deliveryFee);
+  }
+
   // Setters con notificación
+  void setAllOrders(List<DeliveryOrder> orders) {
+    _allOrders = orders;
+    notifyListeners();
+  }
+
   void setDateRange(DateTime? start, DateTime? end) {
     _startDate = start;
     _endDate = end;
@@ -68,12 +84,10 @@ class FilterProvider with ChangeNotifier {
   List<DeliveryOrder> applyFilters(List<DeliveryOrder> orders) {
     return orders.where((order) {
       // Filtro por fecha
-      if (_endDate != null &&
-          order.orderDate.isBefore(_endDate!.add(const Duration(days: 0)))) {
+      if (_startDate != null && order.orderDate.isBefore(_startDate!)) {
         return false;
       }
-      if (_endDate != null &&
-          order.orderDate.isAfter(_endDate!.add(const Duration(days: 1)))) {
+      if (_endDate != null && order.orderDate.isAfter(_endDate!)) {
         return false;
       }
 
@@ -103,7 +117,7 @@ class FilterProvider with ChangeNotifier {
         return false;
       }
 
-      // Filtro por pedidos urgentes (más de 10 MMINUTOS en estado pendiente)
+      // Filtro por pedidos urgentes (más de 10 minutos en estado pendiente)
       if (_showOnlyUrgent) {
         final isUrgent = order.status == OrderStatus.pending &&
             DateTime.now().difference(order.orderDate).inMinutes >= 10;

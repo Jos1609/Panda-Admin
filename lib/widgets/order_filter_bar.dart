@@ -7,11 +7,12 @@ import '../models/order_model.dart';
 
 class OrderFilterBar extends StatelessWidget {
   const OrderFilterBar({super.key});
+  
 
   @override
   Widget build(BuildContext context) {
     return Consumer<FilterProvider>(
-      builder: (context, filterProvider, child) {
+      builder: (context, filterProvider, child) {          
         return Container(
           padding: const EdgeInsets.all(16),
           decoration: BoxDecoration(
@@ -30,57 +31,85 @@ class OrderFilterBar extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               const Text(
-                'Filtros',
+                'Filtros', 
                 style: TextStyle(
                   fontSize: 18,
                   fontWeight: FontWeight.bold,
                 ),
               ),
               const SizedBox(height: 16),
+            Text(
+              'Total: S/${filterProvider.filteredOrdersTotal.toStringAsFixed(2)}',
+              style: const TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.bold,
+                color: Colors.green,
+              ),
+            ),
+              const SizedBox(height: 16),
               Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Expanded(
-                    child: TextField(
-                      onChanged: filterProvider.setSearchQuery,
-                      decoration: InputDecoration(
-                        hintText: 'Buscar pedidos...',
-                        prefixIcon: const Icon(Icons.search),
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12),
+                    flex: 3,
+                    child: Column(
+                      children: [
+                        Row(
+                          children: [
+                            Expanded(
+                              child: TextField(
+                                onChanged: filterProvider.setSearchQuery,
+                                decoration: InputDecoration(
+                                  hintText: 'Buscar pedidos...',
+                                  prefixIcon: const Icon(Icons.search),
+                                  border: OutlineInputBorder(
+                                    borderRadius: BorderRadius.circular(12),
+                                  ),
+                                ),
+                              ),
+                            ),
+                            const SizedBox(width: 16),
+                            _BuildDateRangePicker(
+                                filterProvider: filterProvider),
+                          ],
                         ),
-                      ),
+                        const SizedBox(height: 16),
+                        SingleChildScrollView(
+                          scrollDirection: Axis.horizontal,
+                          child: Row(
+                            children: [
+                              _buildStatusFilter(
+                                  OrderStatus.pending, filterProvider),
+                              _buildStatusFilter(
+                                  OrderStatus.assigned, filterProvider),
+                              _buildStatusFilter(
+                                  OrderStatus.inProgress, filterProvider),
+                              _buildStatusFilter(
+                                  OrderStatus.delivered, filterProvider),
+                              _buildStatusFilter(
+                                  OrderStatus.cancelled, filterProvider),
+                              const SizedBox(width: 8),
+                              _buildToggleFilter(
+                                'Solo Impagos',
+                                Icons.money_off,
+                                filterProvider.showOnlyUnpaid,
+                                filterProvider.toggleUnpaidFilter,
+                              ),
+                              const SizedBox(width: 8),
+                              _buildToggleFilter(
+                                'Urgentes',
+                                Icons.warning,
+                                filterProvider.showOnlyUrgent,
+                                filterProvider.toggleUrgentFilter,
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
                     ),
                   ),
                   const SizedBox(width: 16),
-                  _BuildDateRangePicker(filterProvider: filterProvider),
-                ],
-              ),
-              const SizedBox(height: 16),
-              SingleChildScrollView(
-                scrollDirection: Axis.horizontal,
-                child: Row(
-                  children: [
-                    _buildStatusFilter(OrderStatus.pending, filterProvider),
-                    _buildStatusFilter(OrderStatus.assigned, filterProvider),
-                    _buildStatusFilter(OrderStatus.inProgress, filterProvider),
-                    _buildStatusFilter(OrderStatus.delivered, filterProvider),
-                    _buildStatusFilter(OrderStatus.cancelled, filterProvider),
-                    const SizedBox(width: 8),
-                    _buildToggleFilter(
-                      'Solo Impagos',
-                      Icons.money_off,
-                      filterProvider.showOnlyUnpaid,
-                      filterProvider.toggleUnpaidFilter,
-                    ),
-                    const SizedBox(width: 8),
-                    _buildToggleFilter(
-                      'Urgentes',
-                      Icons.warning,
-                      filterProvider.showOnlyUrgent,
-                      filterProvider.toggleUrgentFilter,
-                    ),
                   ],
-                ),
               ),
             ],
           ),
