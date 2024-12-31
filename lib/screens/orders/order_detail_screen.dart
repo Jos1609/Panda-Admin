@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:panda_admin/models/payment_model.dart';
 import 'package:panda_admin/utils/dialog_utils.dart';
 import 'package:panda_admin/widgets/payment_method_dialog.dart';
+import 'package:panda_admin/widgets/share_button.dart';
 // ignore: depend_on_referenced_packages
 import 'package:provider/provider.dart';
 import '../../models/order_model.dart';
@@ -220,12 +221,18 @@ class OrderDetailScreen extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text(
-            'Detalle del pedido',
-            style: TextStyle(
-              fontSize: 18,
-              fontWeight: FontWeight.bold,
-            ),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              const Text(
+                'Detalle del pedido',
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              ShareButton(order: order),
+            ],
           ),
           const SizedBox(height: 16),
           const Row(
@@ -329,7 +336,7 @@ class OrderDetailScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildOrderSummary(BuildContext context,DeliveryOrder order) {
+  Widget _buildOrderSummary(BuildContext context, DeliveryOrder order) {
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 16),
       padding: const EdgeInsets.all(16),
@@ -414,7 +421,7 @@ class OrderDetailScreen extends StatelessWidget {
                   ),
                 ],
               ),
-            ),         
+            ),
 
 // Si hay método de pago, mostramos la información
           if (order.paymentMethod != null)
@@ -457,7 +464,7 @@ class OrderDetailScreen extends StatelessWidget {
                 ],
               ),
             ),
-            ElevatedButton.icon(
+          ElevatedButton.icon(
             onPressed: () => _showPaymentMethodDialog(context, order),
             icon: Icon(
               order.isPaid ? Icons.money_off : Icons.attach_money,
@@ -720,4 +727,5 @@ class OrderDetailScreen extends StatelessWidget {
         return 'Cancelado';
     }
   }
+
 }

@@ -182,7 +182,7 @@ class _BuildDateRangePicker extends StatelessWidget {
         }
       },
       icon: const Icon(Icons.calendar_today),
-      label: const Text('Rango de fechas'),
+      label: const Text('Fechas'),
       style: ElevatedButton.styleFrom(
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
         shape: RoundedRectangleBorder(
