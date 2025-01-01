@@ -7,6 +7,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:panda_admin/firebase_options.dart';
 import 'package:panda_admin/providers/filter_provider.dart';
 import 'package:panda_admin/providers/order_provider.dart';
+import 'package:panda_admin/screens/drivers/drivers_screen.dart';
 import 'package:panda_admin/screens/login_screen.dart';
 import 'package:panda_admin/screens/dashboard_screen.dart';
 import 'package:panda_admin/screens/orders/orders_list_screen.dart';
@@ -54,7 +55,7 @@ class MyApp extends StatelessWidget {
         '/dashboard': (context) => const DashboardScreen(),
         '/orders': (context) => const OrdersListScreen(),
         //'/products': (context) => const ProductsScreen(),
-        //'/drivers': (context) => const DriversScreen(),
+        '/drivers': (context) => const DriversScreen(),
         //'/customers': (context) => const CustomersScreen(),
         //'/locations': (context) => const LocationsScreen(),
         //'/reports': (context) => const ReportsScreen(),

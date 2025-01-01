@@ -28,15 +28,19 @@ class FilterProvider with ChangeNotifier {
 
   /// Getter para calcular el total de los pedidos filtrados
   double get filteredOrdersTotal {
-    filteredOrders.forEach((order) {
-      print('Order ID: ${order.id}, Delivery Fee: ${order.deliveryFee}');
-    });
+    for (var order in filteredOrders) {
+      if (kDebugMode) {
+        print('Order ID: ${order.id}, Delivery Fee: ${order.deliveryFee}');
+      }
+    }
     return filteredOrders.fold(0.0, (total, order) => total + order.deliveryFee);
   }
 
   // Setters con notificación
   void setAllOrders(List<DeliveryOrder> orders) {
-    print('Setting orders: ${orders.length}');
+    if (kDebugMode) {
+      print('Setting orders: ${orders.length}');
+    }
     _allOrders = orders;
     notifyListeners();
   }

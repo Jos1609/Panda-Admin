@@ -5,13 +5,13 @@ import '../utils/app_exception.dart';
 
 class DeliveryService {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
-  final String _collection = 'delivery_people';
+  final String _collection = 'drivers';
 
   Future<List<DeliveryPerson>> getAvailableDeliveryPeople() async {
     try {
       final querySnapshot = await _firestore
           .collection(_collection)
-          .where('isAvailable', isEqualTo: true)
+          .where('status', isEqualTo: 0)
           .get();
 
       return querySnapshot.docs
@@ -22,20 +22,21 @@ class DeliveryService {
     }
   }
 
+  /// Actualizar el estado (`status`) de un repartidor.
   Future<void> updateDeliveryPersonStatus(
     String deliveryPersonId,
-    bool isAvailable,
+    int status,
   ) async {
     try {
-      await _firestore
-          .collection(_collection)
-          .doc(deliveryPersonId)
-          .update({'isAvailable': isAvailable});
+      await _firestore.collection(_collection).doc(deliveryPersonId).update({
+        'status': status,
+      });
     } catch (e) {
       throw AppException('Error al actualizar estado del repartidor: $e');
     }
   }
 
+  /// Asignar un pedido a un repartidor.
   Future<void> addOrderToDeliveryPerson(
     String deliveryPersonId,
     String orderId,
@@ -49,6 +50,7 @@ class DeliveryService {
     }
   }
 
+  /// Remover un pedido de un repartidor.
   Future<void> removeOrderFromDeliveryPerson(
     String deliveryPersonId,
     String orderId,
@@ -61,4 +63,33 @@ class DeliveryService {
       throw AppException('Error al remover pedido del repartidor: $e');
     }
   }
+
+  /// Obtener un repartidor específico por su ID.
+  Future<DeliveryPerson?> getDeliveryPersonById(String deliveryPersonId) async {
+    try {
+      final docSnapshot =
+          await _firestore.collection(_collection).doc(deliveryPersonId).get();
+      if (docSnapshot.exists) {
+        return DeliveryPerson.fromFirestore(docSnapshot);
+      }
+      return null;
+    } catch (e) {
+      throw AppException('Error al obtener los detalles del repartidor: $e');
+    }
+  }
+
+  /// Actualizar el `rating` de un repartidor.
+  Future<void> updateDeliveryPersonRating(
+    String deliveryPersonId,
+    int newRating,
+  ) async {
+    try {
+      await _firestore.collection(_collection).doc(deliveryPersonId).update({
+        'rating': newRating,
+      });
+    } catch (e) {
+      throw AppException('Error al actualizar el rating del repartidor: $e');
+    }
+  }
+ 
 }

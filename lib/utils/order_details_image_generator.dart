@@ -1,8 +1,9 @@
 // lib/utils/order_details_image_generator.dart
 import 'dart:io';
 import 'package:flutter/material.dart';
-import 'package:flutter/rendering.dart';
+// ignore: depend_on_referenced_packages
 import 'package:path_provider/path_provider.dart';
+// ignore: depend_on_referenced_packages
 import 'package:screenshot/screenshot.dart';
 import '../models/order_model.dart';
 

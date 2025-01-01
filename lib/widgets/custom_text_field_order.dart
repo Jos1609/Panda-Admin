@@ -10,7 +10,7 @@ class CustomTextFieldOrder extends StatelessWidget {
   final Function(String)? onChanged; // Agregar este parámetro
 
   const CustomTextFieldOrder({
-    Key? key,
+    super.key,
     required this.controller,
     required this.label,
     required this.icon,
@@ -18,7 +18,7 @@ class CustomTextFieldOrder extends StatelessWidget {
     this.validator,
     this.maxLines = 1,
     this.onChanged, // Agregar este parámetro
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {

@@ -6,6 +6,7 @@ import '../models/order_model.dart';
 import '../services/order_service.dart';
 import '../services/delivery_service.dart';
 import '../utils/app_exception.dart';
+// ignore: depend_on_referenced_packages
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 class OrderProvider with ChangeNotifier {
@@ -38,6 +39,7 @@ class OrderProvider with ChangeNotifier {
   }
 
   double get totalRevenue {
+    // ignore: avoid_types_as_parameter_names
     return _orders.fold(0, (sum, order) => sum + order.total);
   }
 
@@ -188,7 +190,9 @@ class OrderProvider with ChangeNotifier {
         };
       }).toList();
     } catch (e) {
-      print('Error searching customers: $e');
+      if (kDebugMode) {
+        print('Error searching customers: $e');
+      }
       return [];
     }
   }

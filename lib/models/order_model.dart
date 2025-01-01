@@ -5,14 +5,15 @@ import 'package:panda_admin/models/payment_model.dart';
 import 'package:panda_admin/models/status_log_model.dart';
 
 enum OrderStatus {
-  pending,    // Pendiente de asignación
-  assigned,   // Asignado a repartidor
+  pending, // Pendiente de asignación
+  assigned, // Asignado a repartidor
   inProgress, // En camino
-  delivered,  // Entregado
-  cancelled   // Cancelado
+  delivered, // Entregado
+  cancelled // Cancelado
 }
 
-class DeliveryOrder {  // Cambiamos el nombre de Order a DeliveryOrder
+class DeliveryOrder {
+  // Cambiamos el nombre de Order a DeliveryOrder
   final String id;
   final String customerName;
   final String customerPhone;
@@ -30,7 +31,7 @@ class DeliveryOrder {  // Cambiamos el nombre de Order a DeliveryOrder
   final List<StatusLog> statusHistory;
   final PaymentMethod? paymentMethod;
   String? paymentReference;
-  
+
   DeliveryOrder({
     required this.id,
     required this.customerName,
@@ -78,15 +79,17 @@ class DeliveryOrder {  // Cambiamos el nombre de Order a DeliveryOrder
           .map((log) => StatusLog.fromMap(log))
           .toList(),
       paymentMethod: data['paymentMethod'] != null
-    ? PaymentMethod.values.cast<PaymentMethod?>().firstWhere(
-        (e) => e?.toString() == 'PaymentMethod.${data['paymentMethod']}',
-        orElse: () => null, 
-      )
-    : null,
-paymentReference: data['paymentReference'],
-
+          ? PaymentMethod.values.cast<PaymentMethod?>().firstWhere(
+                (e) =>
+                    e?.toString() == 'PaymentMethod.${data['paymentMethod']}',
+                orElse: () => null,
+              )
+          : null,
+      paymentReference: data['paymentReference'],
     );
   }
+
+  get amount => null;
 
   // Método para convertir a Map para Firestore
   Map<String, dynamic> toMap() {
@@ -121,5 +124,4 @@ paymentReference: data['paymentReference'],
       ),
     );
   }
-  
 }
