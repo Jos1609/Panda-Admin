@@ -22,7 +22,6 @@ class DeliveryHistorySection extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           _buildHeader(context),
-          const SizedBox(height: 12),
           _buildOrdersList(),
         ],
       ),
@@ -36,7 +35,7 @@ class DeliveryHistorySection extends StatelessWidget {
         Text(
           'Historial de Pedidos',
           style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                fontSize:25, // Tamaño más pequeño
+                fontSize: 20, // Tamaño más pequeño
               ),
         ),
         TextButton.icon(
@@ -45,10 +44,10 @@ class DeliveryHistorySection extends StatelessWidget {
             '/driver-orders',
             arguments: driverId,
           ),
-          icon: const Icon(Icons.history, size: 20), // Icono más pequeño
+          icon: const Icon(Icons.history, size: 16), // Icono más pequeño
           label: const Text(
             'Ver todo',
-            style: TextStyle(fontSize: 16), // Texto más pequeño
+            style: TextStyle(fontSize: 14), // Texto más pequeño
           ),
         ),
       ],
@@ -62,26 +61,34 @@ class DeliveryHistorySection extends StatelessWidget {
         if (snapshot.hasError) {
           return _buildErrorState();
         }
-
         if (snapshot.connectionState == ConnectionState.waiting) {
           return _buildLoadingState();
         }
-
         if (!snapshot.hasData || snapshot.data!.isEmpty) {
           return _buildEmptyState();
         }
-
-        return ListView.separated(
-          shrinkWrap: true,
-          physics: const NeverScrollableScrollPhysics(),
-          itemCount: snapshot.data!.length,
-          separatorBuilder: (_, __) => const Divider(height: 1),
-          itemBuilder: (context, index) {
-            return OrderCard(
-              order: snapshot.data![index],
-              onTap: () => _showOrderDetails(context, snapshot.data![index]),
-            );
-          },
+        return ConstrainedBox(
+          constraints: BoxConstraints(
+            maxHeight: MediaQuery.of(context).size.height *
+                0.86, // Ajusta la altura máxima según tus necesidades
+          ),
+          child: ListView.builder(
+            shrinkWrap: true,
+            itemCount: snapshot.data!.length,
+            itemBuilder: (context, index) {
+              return Column(
+                children: [
+                  OrderCard(
+                    order: snapshot.data![index],
+                    onTap: () =>
+                        _showOrderDetails(context, snapshot.data![index]),
+                  ),
+                  if (index < snapshot.data!.length - 1)
+                    const Divider(height: 1),
+                ],
+              );
+            },
+          ),
         );
       },
     );

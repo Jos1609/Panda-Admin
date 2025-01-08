@@ -42,6 +42,20 @@ class Driver {
       onTimeDeliveryPercentage: json['onTimeDeliveryPercentage'].toDouble(),
     );
   }
+  Map<String, dynamic> toMap() {
+  return {
+    'id': id,
+    'name': name,
+    'phoneNumber': phoneNumber,
+    'email': email,
+    'address': address,
+    'status': status.index,
+    'rating': rating,
+    'totalDeliveries': totalDeliveries,
+    'averageDeliveryTime': averageDeliveryTime,
+    'onTimeDeliveryPercentage': onTimeDeliveryPercentage,
+  };
+}
 }
 
 enum DriverStatus {

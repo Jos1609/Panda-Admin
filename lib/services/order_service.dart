@@ -10,7 +10,7 @@ class OrderService {
 
   // Stream de pedidos con paginación y filtros
   Stream<List<DeliveryOrder>> getOrders({
-    int limit = 20,
+    int limit = 100,
     OrderStatus? statusFilter,
     DateTime? startDate,
     DateTime? endDate,
@@ -86,6 +86,7 @@ class OrderService {
     try {
       await _firestore.collection(_collection).doc(orderId).update({
         'deliveryPersonId': deliveryPersonId,
+        'status': OrderStatus.assigned.toString().split('.').last, // Cambia automáticamente el estado a asignado
       });
     } catch (e) {
       throw AppException('Error al asignar repartidor: $e');

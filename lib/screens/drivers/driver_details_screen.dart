@@ -8,6 +8,7 @@ import '../../services/driver_service.dart';
 import '../../services/auth_service.dart';
 import '../../utils/status_helpers.dart';
 import '../../widgets/custom_card.dart';
+import '../../widgets/add_driver_form.dart';
 
 class DriverDetailsScreen extends StatefulWidget {
   final Driver driver;
@@ -297,9 +298,22 @@ class _DriverDetailsScreenState extends State<DriverDetailsScreen> {
     );
   }
 
-  Future<void> _refreshDriverData() async {
-    // Implementar la lógica para actualizar los datos del repartidor
-    // desde Firestore
+  Future<Driver?> _refreshDriverData() async {
+    setState(() => _isLoading = true);
+    try {
+      final updatedDriver =
+          await _driverService.getDriverById(widget.driver.id);
+      return updatedDriver;
+    } catch (e) {
+      // ignore: use_build_context_synchronously
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+            content: Text('Error al obtener los datos del repartidor')),
+      );
+      return widget.driver;
+    } finally {
+      setState(() => _isLoading = false);
+    }
   }
 
   void _handleMenuAction(BuildContext context, String value) async {
@@ -319,7 +333,35 @@ class _DriverDetailsScreenState extends State<DriverDetailsScreen> {
     }
   }
 
-  Future<void> _showEditDriverDialog() async {}
+  Future<void> _showEditDriverDialog() async {
+    final updatedDriver = await showDialog<Driver>(
+      context: context,
+      builder: (context) => AddDriverForm(
+        onSubmit: (driver) => Navigator.pop(context, driver),
+        initialDriver: widget.driver,
+      ),
+    );
+
+    if (updatedDriver != null) {
+      setState(() => _isLoading = true);
+      try {
+        await _driverService.updateDriver(
+            updatedDriver.id, updatedDriver.toMap());
+        await _refreshDriverData();
+        // ignore: use_build_context_synchronously
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Información actualizada con éxito')),
+        );
+      } catch (e) {
+        // ignore: use_build_context_synchronously
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Error al actualizar la información')),
+        );
+      } finally {
+        setState(() => _isLoading = false);
+      }
+    }
+  }
 
   Future<void> _showChangeStatusDialog() async {
     final newStatus = await showDialog<DriverStatus>(

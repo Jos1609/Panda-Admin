@@ -153,70 +153,87 @@ class DriverService {
   }
 
   // Obtener estadísticas del repartidor
-  Future<Map<String, dynamic>> getDriverStats(String driverId) async {
-    try {
-      final deliveriesSnapshot = await _firestore
-          .collection('deliveries')
-          .where('driverId', isEqualTo: driverId)
-          .get();
+ Future<Map<String, dynamic>> getDriverStats(String driverId) async {
+  try {
+    final deliveriesSnapshot = await _firestore
+        .collection('orders')
+        .where('deliveryPersonId', isEqualTo: driverId)
+        .get();
 
-      int totalDeliveries = deliveriesSnapshot.size;
-      double totalTime = 0;
-      int onTimeDeliveries = 0;
-      double totalRating = 0;
-      int ratedDeliveries = 0;
+    int totalDeliveries = deliveriesSnapshot.size;
+    double totalTime = 0;
+    int onTimeDeliveries = 0;
+    double totalRating = 0;
+    int ratedDeliveries = 0;
 
-      for (var doc in deliveriesSnapshot.docs) {
-        final data = doc.data();
-        
-        // Calcular tiempo de entrega
-        if (data['deliveredAt'] != null && data['assignedAt'] != null) {
-          final deliveredAt = (data['deliveredAt'] as Timestamp).toDate();
-          final assignedAt = (data['assignedAt'] as Timestamp).toDate();
-          totalTime += deliveredAt.difference(assignedAt).inMinutes;
+    for (var doc in deliveriesSnapshot.docs) {
+      final data = doc.data();
+
+      // Calcular tiempo de entrega basado en statusHistory
+      if (data['statusHistory'] != null && data['statusHistory'] is List) {
+        final statusHistory = List<Map<String, dynamic>>.from(data['statusHistory']);
+
+        DateTime? inProgressTime;
+        DateTime? deliveredTime;
+
+        for (var statusEntry in statusHistory) {
+          if (statusEntry['status'] == 'inProgress') {
+            inProgressTime = (statusEntry['timestamp'] as Timestamp).toDate();
+          } else if (statusEntry['status'] == 'delivered') {
+            deliveredTime = (statusEntry['timestamp'] as Timestamp).toDate();
+          }
+
+          // Si ya tenemos ambos tiempos, salir del bucle
+          if (inProgressTime != null && deliveredTime != null) {
+            break;
+          }
         }
 
-        // Contar entregas a tiempo
-        if (data['isOnTime'] == true) {
-          onTimeDeliveries++;
-        }
-
-        // Sumar calificaciones
-        if (data['rating'] != null) {
-          totalRating += data['rating'];
-          ratedDeliveries++;
+        if (inProgressTime != null && deliveredTime != null) {
+          totalTime += deliveredTime.difference(inProgressTime).inMinutes;
         }
       }
 
-      // Calcular promedios
-      double averageTime = totalDeliveries > 0 ? totalTime / totalDeliveries : 0;
-      double onTimePercentage = totalDeliveries > 0 
-          ? (onTimeDeliveries / totalDeliveries) * 100 
-          : 0;
-      double averageRating = ratedDeliveries > 0 
-          ? totalRating / ratedDeliveries 
-          : 0;
+      // Contar entregas a tiempo
+      if (data['isOnTime'] == true) {
+        onTimeDeliveries++;
+      }
 
-      // Actualizar estadísticas en el documento del repartidor
-      await _driversCollection.doc(driverId).update({
-        'totalDeliveries': totalDeliveries,
-        'averageDeliveryTime': averageTime,
-        'onTimeDeliveryPercentage': onTimePercentage,
-        'rating': averageRating,
-        'statsUpdatedAt': FieldValue.serverTimestamp(),
-      });
-
-      return {
-        'totalDeliveries': totalDeliveries,
-        'averageDeliveryTime': averageTime,
-        'onTimeDeliveryPercentage': onTimePercentage,
-        'rating': averageRating,
-      };
-
-    } catch (e) {
-      throw CustomException('Error al obtener estadísticas: $e');
+      // Sumar calificaciones
+      if (data['rating'] != null) {
+        totalRating += data['rating'];
+        ratedDeliveries++;
+      }
     }
+
+    // Calcular promedios
+    double averageTime = totalDeliveries > 0 ? totalTime / totalDeliveries : 0;
+    double onTimePercentage = totalDeliveries > 0
+        ? (onTimeDeliveries / totalDeliveries) * 100
+        : 0;
+    double averageRating = ratedDeliveries > 0
+        ? totalRating / ratedDeliveries
+        : 0;
+
+    // Actualizar estadísticas en el documento del repartidor
+    await _driversCollection.doc(driverId).update({
+      'totalDeliveries': totalDeliveries,
+      'averageDeliveryTime': averageTime,
+      'onTimeDeliveryPercentage': onTimePercentage,
+      'rating': averageRating,
+      'statsUpdatedAt': FieldValue.serverTimestamp(),
+    });
+
+    return {
+      'totalDeliveries': totalDeliveries,
+      'averageDeliveryTime': averageTime,
+      'onTimeDeliveryPercentage': onTimePercentage,
+      'rating': averageRating,
+    };
+  } catch (e) {
+    throw CustomException('Error al obtener estadísticas: $e');
   }
+}
 
   // Limpiar datos si falla la creación
   Future<void> _cleanupFailedCreation(String email) async {

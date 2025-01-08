@@ -4,40 +4,17 @@ import 'package:flutter/material.dart';
 import '../utils/constants.dart';
 
 class CustomCard extends StatelessWidget {
-  /// El contenido del card
-  final Widget child;
-
-  /// Padding interno del card
+   final Widget child;
   final EdgeInsetsGeometry? padding;
-
-  /// Color de fondo del card
   final Color? backgroundColor;
-
-  /// Elevación del card
   final double? elevation;
-
-  /// Radio del borde del card
   final double? borderRadius;
-
-  /// Color del borde del card
   final Color? borderColor;
-
-  /// Ancho del borde del card
   final double? borderWidth;
-
-  /// Margen externo del card
   final EdgeInsetsGeometry? margin;
-
-  /// Función al presionar el card
   final VoidCallback? onTap;
-
-  /// Si el card debe mostrar un efecto de hover
   final bool enableHover;
-
-  /// Si el card debe mostrar un efecto de sombra
   final bool enableShadow;
-
-  /// Widget para mostrar en la esquina superior derecha
   final Widget? headerAction;
 
   const CustomCard({
