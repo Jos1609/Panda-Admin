@@ -67,7 +67,7 @@ class OrderDetailScreen extends StatelessWidget {
               SliverToBoxAdapter(
                 child: _buildOrderSummary(context, order),
               ),
-              if (order.deliveryPersonId != null)
+              if (order.delivery.deliveryPersonId != null)
                 SliverToBoxAdapter(
                   child: _buildDeliveryInfo(order),
                 ),
@@ -127,7 +127,7 @@ class OrderDetailScreen extends StatelessWidget {
             ],
           ),
           const SizedBox(height: 16),
-          if (order.notes != null && order.notes!.isNotEmpty)
+          if (order.delivery.notes != null && order.delivery.notes!.isNotEmpty)
             Container(
               padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
@@ -141,7 +141,7 @@ class OrderDetailScreen extends StatelessWidget {
                   const SizedBox(width: 8),
                   Expanded(
                     child: Text(
-                      order.notes!,
+                      order.delivery.notes!,
                       style: const TextStyle(color: Colors.orange),
                     ),
                   ),
@@ -183,19 +183,19 @@ class OrderDetailScreen extends StatelessWidget {
           _buildInfoRow(
             Icons.person,
             'Nombre',
-            order.customerName,
+            order.customer.name,
           ),
           const SizedBox(height: 12),
           _buildInfoRow(
             Icons.phone,
             'Teléfono',
-            order.customerPhone,
+            order.customer.phone,
           ),
           const SizedBox(height: 12),
           _buildInfoRow(
             Icons.location_on,
             'Dirección',
-            order.customerAddress,
+            order.customer.address,
           ),
         ],
       ),
@@ -354,9 +354,9 @@ class OrderDetailScreen extends StatelessWidget {
       ),
       child: Column(
         children: [
-          _buildSummaryRow('Subtotal', order.subtotal),
+          _buildSummaryRow('Subtotal', order.payment.subtotal),
           const SizedBox(height: 8),
-          _buildSummaryRow('Delivery', order.deliveryFee),
+          _buildSummaryRow('Delivery', order.payment.deliveryFee),
           const Divider(height: 24),
           _buildSummaryRow(
             'Total',
@@ -424,7 +424,7 @@ class OrderDetailScreen extends StatelessWidget {
             ),
 
 // Si hay método de pago, mostramos la información
-          if (order.paymentMethod != null)
+          if (order.payment.paymentMethod != null)
             Container(
               margin: const EdgeInsets.only(top: 8),
               padding: const EdgeInsets.symmetric(
@@ -439,22 +439,22 @@ class OrderDetailScreen extends StatelessWidget {
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   Icon(
-                    order.paymentMethod!.icon,
+                    order.payment.paymentMethod!.icon,
                     size: 16,
                     color: Colors.grey[700],
                   ),
                   const SizedBox(width: 4),
                   Text(
-                    order.paymentMethod!.name,
+                    order.payment.paymentMethod!.name,
                     style: TextStyle(
                       color: Colors.grey[700],
                       fontWeight: FontWeight.w500,
                     ),
                   ),
-                  if (order.paymentReference != null) ...[
+                  if (order.payment.paymentReference != null) ...[
                     const SizedBox(width: 4),
                     Text(
-                      '(${order.paymentReference!})',
+                      '(${order.payment.paymentReference!})',
                       style: TextStyle(
                         color: Colors.grey[600],
                         fontSize: 12,
@@ -500,8 +500,8 @@ class OrderDetailScreen extends StatelessWidget {
       context: context,
       builder: (BuildContext dialogContext) {
         return PaymentMethodDialog(
-          currentMethod: order.paymentMethod,
-          currentReference: order.paymentReference,
+          currentMethod: order.payment.paymentMethod,
+          currentReference: order.payment.paymentReference,
           onPaymentUpdated: (method, reference) async {
             try {
               final orderProvider = dialogContext.read<OrderProvider>();
@@ -565,9 +565,9 @@ class OrderDetailScreen extends StatelessWidget {
           ListView.builder(
             shrinkWrap: true,
             physics: const NeverScrollableScrollPhysics(),
-            itemCount: order.statusHistory.length,
+            itemCount: order.delivery.statusHistory.length,
             itemBuilder: (context, index) {
-              final statusLog = order.statusHistory[index];
+              final statusLog = order.delivery.statusHistory[index];
               return ListTile(
                 contentPadding: EdgeInsets.zero,
                 leading: Icon(

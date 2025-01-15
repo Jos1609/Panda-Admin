@@ -1,6 +1,6 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
     <application
-        android:label="panda_admin"
+        android:label="Panda Admin"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher">
         <activity

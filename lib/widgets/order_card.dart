@@ -49,7 +49,7 @@ Widget build(BuildContext context) {
             ),
             const SizedBox(height: 8),
             Text(
-              'Cliente: ${order.customerName}',
+              'Cliente: ${order.customer.name}',
               style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                     fontSize: 14,  // Reducir tamaño
                     color: Colors.black87,  // Color oscuro para mejor contraste
@@ -57,7 +57,7 @@ Widget build(BuildContext context) {
             ),
             const SizedBox(height: 4),
             Text(
-              'Dirección: ${order.customerAddress}',
+              'Dirección: ${order.customer.address}',
               style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                     fontSize: 12,  // Reducir tamaño
                     color: Colors.grey[600],  // Colorear en gris suave

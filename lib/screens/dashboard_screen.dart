@@ -21,30 +21,38 @@ class _DashboardScreenState extends State<DashboardScreen> {
   DateTime _endDate = DateTime.now();
   bool _isLoading = true;
   DashboardStats? _stats;
+  bool _mounted = true;
 
   @override
   void initState() {
     super.initState();
     _loadDashboardData();
+    _mounted = true;
   }
 
   Future<void> _loadDashboardData() async {
     try {
+    if (_mounted) {
       setState(() => _isLoading = true);
-      final stats = await _dashboardService.getDashboardStats(
-        startDate: _startDate,
-        endDate: _endDate,
-      );
+    }
+    final stats = await _dashboardService.getDashboardStats(
+      startDate: _startDate,
+      endDate: _endDate,
+    );
+    if (_mounted) {
       setState(() {
         _stats = stats;
         _isLoading = false;
       });
-    } catch (e) {
+    }
+  } catch (e) {
+    if (_mounted) {
       setState(() => _isLoading = false);
-      // ignore: use_build_context_synchronously
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error al cargar datos: $e')),
-      );
+    }
+    // ignore: use_build_context_synchronously
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text('Error al cargar datos: $e')),
+    );
     }
   }
 

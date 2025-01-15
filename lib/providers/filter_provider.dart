@@ -1,135 +1,167 @@
 import 'package:flutter/foundation.dart';
+import 'package:panda_admin/models/filter_state.dart';
 import '../models/order_model.dart';
+import '../utils/filter_utils.dart';
 
 class FilterProvider with ChangeNotifier {
+  // Cache de filtros para optimizar rendimiento
+  final Map<String, List<DeliveryOrder>> _filteredOrdersCache = {};
+  
   // Estado de filtros
-  DateTime? _startDate;
-  DateTime? _endDate;
-  OrderStatus? _statusFilter;
-  String _searchQuery = '';
-  String? _deliveryPersonId;
-  bool _showOnlyUnpaid = false;
-  bool _showOnlyUrgent = false;
-
-  // Lista de pedidos completa
+  FilterState _filterState = FilterState();
+  
+  // Lista de pedidos
   List<DeliveryOrder> _allOrders = [];
 
-  // Getters
-  DateTime? get startDate => _startDate;
-  DateTime? get endDate => _endDate;
-  OrderStatus? get statusFilter => _statusFilter;
-  String get searchQuery => _searchQuery;
-  String? get deliveryPersonId => _deliveryPersonId;
-  bool get showOnlyUnpaid => _showOnlyUnpaid;
-  bool get showOnlyUrgent => _showOnlyUrgent;
+  // Getters para el estado
+  DateTime? get startDate => _filterState.startDate;
+  DateTime? get endDate => _filterState.endDate;
+  OrderStatus? get statusFilter => _filterState.status;
+  String get searchQuery => _filterState.searchQuery;
+  String? get deliveryPersonId => _filterState.deliveryPersonId;
+  bool get showOnlyUnpaid => _filterState.showOnlyUnpaid;
+  bool get showOnlyUrgent => _filterState.showOnlyUrgent;
 
-  /// Getter para obtener pedidos filtrados
-  List<DeliveryOrder> get filteredOrders => applyFilters(_allOrders);
-
-  /// Getter para calcular el total de los pedidos filtrados
-  double get filteredOrdersTotal {
-    for (var order in filteredOrders) {
-      if (kDebugMode) {
-        print('Order ID: ${order.id}, Delivery Fee: ${order.deliveryFee}');
-      }
+  // Getter optimizado para pedidos filtrados
+  List<DeliveryOrder> get filteredOrders {
+    final cacheKey = _generateCacheKey();
+    
+    if (_filteredOrdersCache.containsKey(cacheKey)) {
+      return _filteredOrdersCache[cacheKey]!;
     }
-    return filteredOrders.fold(0.0, (total, order) => total + order.deliveryFee);
+
+    final filtered = _applyFilters();
+    _filteredOrdersCache[cacheKey] = filtered;
+    
+    return filtered;
   }
 
-  // Setters con notificación
+  // Getter optimizado para total
+  double get filteredOrdersTotal {
+    return filteredOrders.fold(
+      0.0,
+      (total, order) => total + order.payment.deliveryFee,
+    );
+  }
+
+  // Setters optimizados
   void setAllOrders(List<DeliveryOrder> orders) {
-    if (kDebugMode) {
-      print('Setting orders: ${orders.length}');
-    }
+    if (listEquals(_allOrders, orders)) return;
+    
     _allOrders = orders;
+    _clearCache();
     notifyListeners();
   }
 
   void setDateRange(DateTime? start, DateTime? end) {
-    _startDate = start;
-    _endDate = end;
+    if (start == _filterState.startDate && end == _filterState.endDate) return;
+    
+    _filterState = _filterState.copyWith(
+      startDate: start,
+      endDate: end,
+    );
+    _clearCache();
     notifyListeners();
   }
 
   void setStatusFilter(OrderStatus? status) {
-    _statusFilter = status;
+    if (status == _filterState.status) return;
+    
+    _filterState = _filterState.copyWith(status: status);
+    _clearCache();
     notifyListeners();
   }
 
   void setSearchQuery(String query) {
-    _searchQuery = query;
+    if (query == _filterState.searchQuery) return;
+    
+    _filterState = _filterState.copyWith(searchQuery: query);
+    _clearCache();
     notifyListeners();
   }
 
   void setDeliveryPersonFilter(String? id) {
-    _deliveryPersonId = id;
+    if (id == _filterState.deliveryPersonId) return;
+    
+    _filterState = _filterState.copyWith(deliveryPersonId: id);
+    _clearCache();
     notifyListeners();
   }
 
   void toggleUnpaidFilter() {
-    _showOnlyUnpaid = !_showOnlyUnpaid;
+    _filterState = _filterState.copyWith(
+      showOnlyUnpaid: !_filterState.showOnlyUnpaid,
+    );
+    _clearCache();
     notifyListeners();
   }
 
   void toggleUrgentFilter() {
-    _showOnlyUrgent = !_showOnlyUrgent;
+    _filterState = _filterState.copyWith(
+      showOnlyUrgent: !_filterState.showOnlyUrgent,
+    );
+    _clearCache();
     notifyListeners();
   }
 
-  // Limpiar filtros
   void clearFilters() {
-    _startDate = null;
-    _endDate = null;
-    _statusFilter = null;
-    _searchQuery = '';
-    _deliveryPersonId = null;
-    _showOnlyUnpaid = false;
-    _showOnlyUrgent = false;
+    _filterState = FilterState();
+    _clearCache();
     notifyListeners();
   }
 
-  // Aplicar filtros a una lista de pedidos
-  List<DeliveryOrder> applyFilters(List<DeliveryOrder> orders) {
-    return orders.where((order) {
-      // Filtro por fecha
-      if (_startDate != null && order.orderDate.isBefore(_startDate!)) {
-        return false;
-      }
-      if (_endDate != null && order.orderDate.isAfter(_endDate!)) {
-        return false;
-      }
+  // Métodos privados
+  String _generateCacheKey() {
+    return '${_filterState.toString()}_${_allOrders.length}';
+  }
 
-      // Filtro por estado
-      if (_statusFilter != null && order.status != _statusFilter) {
-        return false;
-      }
+  void _clearCache() {
+    _filteredOrdersCache.clear();
+  }
 
-      // Filtro por búsqueda
-      if (_searchQuery.isNotEmpty) {
-        final searchLower = _searchQuery.toLowerCase();
-        final matchesSearch =
-            order.customerName.toLowerCase().contains(searchLower) ||
-                order.customerAddress.toLowerCase().contains(searchLower) ||
-                order.id.toLowerCase().contains(searchLower);
-        if (!matchesSearch) return false;
-      }
-
-      // Filtro por repartidor
-      if (_deliveryPersonId != null &&
-          order.deliveryPersonId != _deliveryPersonId) {
+  List<DeliveryOrder> _applyFilters() {
+    return _allOrders.where((order) {
+      if (!FilterUtils.matchesDateRange(
+        order.orderDate,
+        _filterState.startDate,
+        _filterState.endDate,
+      )) {
         return false;
       }
 
-      // Filtro por pagos pendientes
-      if (_showOnlyUnpaid && order.isPaid) {
+      if (!FilterUtils.matchesStatus(
+        order.status,
+        _filterState.status,
+      )) {
         return false;
       }
 
-      // Filtro por pedidos urgentes (más de 10 minutos en estado pendiente)
-      if (_showOnlyUrgent) {
-        final isUrgent = order.status == OrderStatus.pending &&
-            DateTime.now().difference(order.orderDate).inMinutes >= 10;
-        if (!isUrgent) return false;
+      if (!FilterUtils.matchesSearch(
+        order: order,
+        query: _filterState.searchQuery,
+      )) {
+        return false;
+      }
+
+      if (!FilterUtils.matchesDeliveryPerson(
+        order.delivery.deliveryPersonId,
+        _filterState.deliveryPersonId,
+      )) {
+        return false;
+      }
+
+      if (!FilterUtils.matchesPaymentStatus(
+        order.payment.isPaid,
+        _filterState.showOnlyUnpaid,
+      )) {
+        return false;
+      }
+
+      if (!FilterUtils.matchesUrgency(
+        order: order,
+        showOnlyUrgent: _filterState.showOnlyUrgent,
+      )) {
+        return false;
       }
 
       return true;

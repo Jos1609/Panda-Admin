@@ -36,11 +36,11 @@ class ExportService {
       buffer.writeln(
         '${order.id},'
         '${order.orderDate},'
-        '${_escapeCsvField(order.customerName)},'
-        '${_escapeCsvField(order.customerAddress)},'
+        '${_escapeCsvField(order.customer.name)},'
+        '${_escapeCsvField(order.customer.address)},'
         '${order.status},'
         '${order.total},'
-        '${order.deliveryPersonId ?? ""},'
+        '${order.delivery.deliveryPersonId ?? ""},'
         '${order.isPaid}'
       );
     }

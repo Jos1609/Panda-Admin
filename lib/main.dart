@@ -11,6 +11,7 @@ import 'package:panda_admin/screens/drivers/drivers_screen.dart';
 import 'package:panda_admin/screens/login_screen.dart';
 import 'package:panda_admin/screens/dashboard_screen.dart';
 import 'package:panda_admin/screens/orders/orders_list_screen.dart';
+import 'package:panda_admin/screens/splash_screen.dart';
 import 'services/auth_service.dart';
 // ignore: depend_on_referenced_packages
 import 'package:provider/provider.dart';
@@ -25,7 +26,13 @@ void main() async {
     MultiProvider(
       providers: [
         ChangeNotifierProvider(create: (_) => OrderProvider()),
-        ChangeNotifierProvider(create: (_) => FilterProvider()),
+        ChangeNotifierProxyProvider<OrderProvider, FilterProvider>(
+          create: (_) => FilterProvider(),
+          update: (_, orderProvider, filterProvider) {
+            filterProvider!.setAllOrders(orderProvider.orders);
+            return filterProvider;
+          },
+        ),
       ],
       child: const MyApp(),
     ),
@@ -50,8 +57,9 @@ class MyApp extends StatelessWidget {
         ),
       ),
       // Definir las rutas aquí
-      
       routes: {
+        '/s': (context) => const SplashScreen(),
+        '/login': (context) => const LoginScreen(),
         '/dashboard': (context) => const DashboardScreen(),
         '/orders': (context) => const OrdersListScreen(),
         //'/products': (context) => const ProductsScreen(),
@@ -59,9 +67,7 @@ class MyApp extends StatelessWidget {
         //'/customers': (context) => const CustomersScreen(),
         //'/locations': (context) => const LocationsScreen(),
         //'/reports': (context) => const ReportsScreen(),
-        //'/settings': (context) => const SettingsScreen(),
-        '/login': (context) => const LoginScreen(),
-        
+        //'/settings': (context) => const SettingsScreen(),      
       },
       
       home: StreamBuilder<User?>(
@@ -78,7 +84,7 @@ class MyApp extends StatelessWidget {
           if (snapshot.hasData) {
             return const DashboardScreen();
           }
-          return const LoginScreen();
+          return const SplashScreen();
         },
       ),
     );

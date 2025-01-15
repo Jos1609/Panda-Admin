@@ -23,12 +23,20 @@ class _CreateOrderScreenState extends State<CreateOrderScreen> {
   final _customerNameController = TextEditingController();
   final _customerPhoneController = TextEditingController();
   final _customerAddressController = TextEditingController();
+  late StoreData _selectedStore;
   final _notesController = TextEditingController();
   final List<OrderItem> _items = [];
   double _deliveryFee = 0.0;
   List<Customer> _suggestions = [];
   bool _showSuggestions = false;
   Timer? _debounceTimer;
+  List<StoreData> _stores = [];
+
+  @override
+  void initState() {
+    super.initState();
+    _loadStores();
+  }
 
   @override
   void dispose() {
@@ -74,24 +82,45 @@ class _CreateOrderScreenState extends State<CreateOrderScreen> {
 
     final order = DeliveryOrder(
       id: DateTime.now().millisecondsSinceEpoch.toString(),
-      customerName: _customerNameController.text,
-      customerPhone: _customerPhoneController.text,
-      customerAddress: _customerAddressController.text,
+      customer: CustomerData(
+        name: _customerNameController.text,
+        phone: _customerPhoneController.text,
+        address: _customerAddressController.text,
+      ),
+      store: StoreData(
+        id: _selectedStore.id,
+        name: _selectedStore.name,
+        address: _selectedStore.address,
+        location: Location(
+          latitude: _selectedStore.location.latitude,
+          longitude: _selectedStore.location.longitude,
+        ),
+        phone: _selectedStore.phone,
+        instructions: _selectedStore.instructions,
+      ),
       orderDate: DateTime.now(),
       status: OrderStatus.pending,
       items: _items,
-      subtotal: subtotal,
-      tax: tax,
-      deliveryFee: _deliveryFee,
-      total: subtotal + tax + _deliveryFee,
-      notes: _notesController.text,
-      statusHistory: [
-        StatusLog(
-          status: OrderStatus.pending,
-          timestamp: DateTime.now(),
-          updatedBy: 'Admin',
-        ),
-      ],
+      payment: PaymentData(
+        subtotal: subtotal,
+        tax: tax,
+        deliveryFee: _deliveryFee,
+        total: subtotal + tax + _deliveryFee,
+        isPaid: false,
+        paymentMethod: null,
+        paymentReference: null,
+      ),
+      delivery: DeliveryData(
+        deliveryPersonId: null,
+        notes: _notesController.text,
+        statusHistory: [
+          StatusLog(
+            status: OrderStatus.pending,
+            timestamp: DateTime.now(),
+            updatedBy: 'Admin',
+          ),
+        ],
+      ),
     );
 
     try {
@@ -130,6 +159,8 @@ class _CreateOrderScreenState extends State<CreateOrderScreen> {
           children: [
             _buildCustomerSection(),
             const SizedBox(height: 24),
+            _buildStoreSection(),
+            const SizedBox(height: 24),
             _buildItemsSection(),
             const SizedBox(height: 24),
             _buildDeliverySection(),
@@ -141,6 +172,99 @@ class _CreateOrderScreenState extends State<CreateOrderScreen> {
         ),
       ),
       bottomNavigationBar: _buildBottomBar(),
+    );
+  }
+
+  Widget _buildStoreSection() {
+    if (_stores.isEmpty) {
+      // Si no hay tiendas, muestra un botón para agregar una nueva tienda.
+      return Card(
+        elevation: 2,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(12),
+        ),
+        child: Padding(
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Text(
+                'No hay tiendas disponibles',
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              const SizedBox(height: 16),
+              ElevatedButton.icon(
+                onPressed: () => _showAddStoreDialog(
+                    context), // Abre el diálogo para agregar tienda
+                icon: const Icon(Icons.add),
+                label: const Text('Agregar Tienda'),
+                style: ElevatedButton.styleFrom(
+                  padding:
+                      const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+
+    // Dropdown con tiendas cargadas
+    return Card(
+      elevation: 2,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text(
+              'Seleccionar Tienda',
+              style: TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            const SizedBox(height: 16),
+            DropdownButtonFormField<StoreData>(
+              value: _selectedStore,
+              decoration: const InputDecoration(
+                prefixIcon: Icon(Icons.store),
+                border: OutlineInputBorder(),
+                contentPadding:
+                    EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+              ),
+              items: _stores.map((store) {
+                return DropdownMenuItem(
+                  value: store,
+                  child: Text(store.name),
+                );
+              }).toList(),
+              onChanged: (StoreData? value) {
+                if (value != null) {
+                  setState(() {
+                    _selectedStore = value;
+                  });
+                }
+              },
+              validator: (value) {
+                if (value == null) {
+                  return 'Por favor selecciona una tienda';
+                }
+                return null;
+              },
+            ),
+          ],
+        ),
+      ),
     );
   }
 
@@ -451,6 +575,131 @@ class _CreateOrderScreenState extends State<CreateOrderScreen> {
         ),
         child: const Text('Crear Pedido'),
       ),
+    );
+  }
+
+  Future<void> _loadStores() async {
+    try {
+      final stores = await context.read<OrderProvider>().getStores();
+      setState(() {
+        _stores = stores;
+        if (stores.isNotEmpty) {
+          _selectedStore = stores.first;
+        } else {
+          // Manejo cuando no hay tiendas disponibles
+          _selectedStore = StoreData(
+            id: '',
+            name: 'Sin tienda',
+            address: 'No disponible',
+            location: Location(latitude: 0.0, longitude: 0.0),
+          );
+        }
+      });
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Error al cargar las tiendas: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
+  }
+
+  void _showAddStoreDialog(BuildContext context) {
+    final nameController = TextEditingController();
+    final addressController = TextEditingController();
+    final latitudeController = TextEditingController();
+    final longitudeController = TextEditingController();
+    final phoneController = TextEditingController();
+    final instructionsController = TextEditingController();
+
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: const Text('Agregar Tienda'),
+          content: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                TextFormField(
+                  controller: nameController,
+                  decoration:
+                      const InputDecoration(labelText: 'Nombre de la Tienda'),
+                ),
+                const SizedBox(height: 8),
+                TextFormField(
+                  controller: addressController,
+                  decoration: const InputDecoration(labelText: 'Dirección'),
+                ),
+                const SizedBox(height: 8),
+                TextFormField(
+                  controller: latitudeController,
+                  decoration: const InputDecoration(labelText: 'Latitud'),
+                  keyboardType: TextInputType.number,
+                ),
+                const SizedBox(height: 8),
+                TextFormField(
+                  controller: longitudeController,
+                  decoration: const InputDecoration(labelText: 'Longitud'),
+                  keyboardType: TextInputType.number,
+                ),
+                const SizedBox(height: 8),
+                TextFormField(
+                  controller: phoneController,
+                  decoration:
+                      const InputDecoration(labelText: 'Teléfono (Opcional)'),
+                ),
+                const SizedBox(height: 8),
+                TextFormField(
+                  controller: instructionsController,
+                  decoration: const InputDecoration(
+                      labelText: 'Instrucciones (Opcional)'),
+                ),
+              ],
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop(); // Cerrar el diálogo sin guardar
+              },
+              child: const Text('Cancelar'),
+            ),
+            ElevatedButton(
+              onPressed: () {
+                // Crear un nuevo objeto StoreData
+                final newStore = StoreData(
+                  id: DateTime.now().toString(), // Generar un ID único
+                  name: nameController.text,
+                  address: addressController.text,
+                  location: Location(
+                    latitude: double.tryParse(latitudeController.text) ?? 0.0,
+                    longitude:
+                        double.tryParse(longitudeController.text) ?? 0.0,
+                  ),
+                  phone: phoneController.text.isEmpty
+                      ? null
+                      : phoneController.text,
+                  instructions: instructionsController.text.isEmpty
+                      ? null
+                      : instructionsController.text,
+                );
+
+                setState(() {
+                  _stores.add(newStore); // Agregar la nueva tienda a la lista
+                  _selectedStore = newStore; // Seleccionar la nueva tienda
+                });
+
+                Navigator.of(context).pop(); // Cerrar el diálogo
+              },
+              child: const Text('Guardar'),
+            ),
+          ],
+        );
+      },
     );
   }
 

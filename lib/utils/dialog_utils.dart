@@ -11,7 +11,7 @@ class DialogUtils {
     showDialog(
       context: context,
       builder: (context) => AssignDeliveryDialog(
-        currentDeliveryPersonId: order.deliveryPersonId,
+        currentDeliveryPersonId: order.delivery.deliveryPersonId,
         onDeliveryPersonAssigned: (String deliveryPersonId) async {
           try {
             final orderProvider = context.read<OrderProvider>();

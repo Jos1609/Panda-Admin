@@ -82,9 +82,7 @@ class _OrdersListScreenState extends State<OrdersListScreen> {
                   );
                 }
 
-                final filteredOrders = filterProvider.applyFilters(
-                  orderProvider.orders,
-                );
+                final filteredOrders = filterProvider.filteredOrders;
 
                 if (filteredOrders.isEmpty) {
                   return const Center(
@@ -201,12 +199,12 @@ class _OrderCard extends StatelessWidget {
               const SizedBox(height: 12),
               _buildInfoRow(
                 Icons.person,
-                order.customerName,
+                order.customer.name,
               ),
               const SizedBox(height: 8),
               _buildInfoRow(
                 Icons.location_on,
-                order.customerAddress,
+                order.customer.address,
               ),
               const SizedBox(height: 8),
               _buildInfoRow(
@@ -259,7 +257,7 @@ class _OrderCard extends StatelessWidget {
     showDialog(
       context: context,
       builder: (context) => AssignDeliveryDialog(
-        currentDeliveryPersonId: order.deliveryPersonId,
+        currentDeliveryPersonId: order.delivery.deliveryPersonId,
         onDeliveryPersonAssigned: (String deliveryPersonId) async {
           try {
             final orderProvider = context.read<OrderProvider>();

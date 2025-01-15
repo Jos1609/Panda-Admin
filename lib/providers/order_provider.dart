@@ -1,13 +1,13 @@
 import 'package:flutter/foundation.dart';
 // ignore: depend_on_referenced_packages
 import 'package:collection/collection.dart';
-import 'package:panda_admin/models/payment_model.dart';
-import '../models/order_model.dart';
+// ignore: depend_on_referenced_packages
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:panda_admin/models/order_model.dart';
+import '../models/payment_model.dart';
 import '../services/order_service.dart';
 import '../services/delivery_service.dart';
 import '../utils/app_exception.dart';
-// ignore: depend_on_referenced_packages
-import 'package:cloud_firestore/cloud_firestore.dart';
 
 class OrderProvider with ChangeNotifier {
   final OrderService _orderService = OrderService();
@@ -34,23 +34,22 @@ class OrderProvider with ChangeNotifier {
 
   // Estadísticas
   Map<OrderStatus, int> get ordersByStatus {
-    return groupBy(_orders, (DeliveryOrder order) => order.status)
+    return groupBy(_orders, (order) => order.status)
         .map((key, value) => MapEntry(key, value.length));
   }
 
   double get totalRevenue {
     // ignore: avoid_types_as_parameter_names
-    return _orders.fold(0, (sum, order) => sum + order.total);
+    return _orders.fold(0, (sum, order) => sum + order.payment.total);
   }
 
-  // Inicializar y escuchar cambios
+  // Inicialización y escucha
   void initialize() {
     _setupOrdersListener();
   }
 
   void _setupOrdersListener() {
     _setLoading(true);
-
     _orderService
         .getOrders(
       startDate: _startDate,
@@ -74,7 +73,7 @@ class OrderProvider with ChangeNotifier {
     );
   }
 
-  // Acciones de pedidos
+  // Operaciones CRUD
   Future<void> createOrder(DeliveryOrder order) async {
     try {
       _setLoading(true);
@@ -88,7 +87,6 @@ class OrderProvider with ChangeNotifier {
     }
   }
 
-  // Método para actualizar estado con validaciones
   Future<void> updateOrderStatus(
     String orderId,
     OrderStatus newStatus,
@@ -96,39 +94,19 @@ class OrderProvider with ChangeNotifier {
   ) async {
     try {
       _setLoading(true);
-
       final order = _orders.firstWhere((o) => o.id == orderId);
 
-      // Validaciones de cambio de estado
-      if (order.status == OrderStatus.cancelled) {
-        throw AppException(
-          'No se puede cambiar el estado de un pedido cancelado',
-        );
+      if (!_canUpdateStatus(order.status, newStatus)) {
+        throw AppException('Cambio de estado no permitido');
       }
 
-      if (order.status == OrderStatus.delivered &&
-          newStatus != OrderStatus.cancelled) {
-        throw AppException(
-          'No se puede cambiar el estado de un pedido entregado',
-        );
-      }
-
-      // Si se está cancelando, liberamos al repartidor
       if (newStatus == OrderStatus.cancelled &&
-          order.deliveryPersonId != null) {
-        final deliveryService = DeliveryService();
-        await deliveryService.removeOrderFromDeliveryPerson(
-          order.deliveryPersonId!,
-          orderId,
-        );
+          order.delivery.deliveryPersonId != null) {
+        await _handleDeliveryPersonRemoval(
+            order.delivery.deliveryPersonId!, orderId);
       }
 
-      await _orderService.updateOrderStatus(
-        orderId,
-        newStatus,
-        updatedBy,
-      );
-
+      await _orderService.updateOrderStatus(orderId, newStatus, updatedBy);
       _error = null;
     } on AppException catch (e) {
       _error = e.message;
@@ -138,32 +116,13 @@ class OrderProvider with ChangeNotifier {
     }
   }
 
-  // Método para asignar repartidor
   Future<void> assignDeliveryPerson(
       String orderId, String deliveryPersonId) async {
     try {
       _setLoading(true);
+      final order = _findOrder(orderId);
 
-      // Primero actualizamos el pedido
-      await _orderService.assignDeliveryPerson(orderId, deliveryPersonId);
-
-      // Luego actualizamos el repartidor
-      final deliveryService = DeliveryService();
-      await deliveryService.addOrderToDeliveryPerson(
-        deliveryPersonId,
-        orderId,
-      );
-
-      // Si había un repartidor anterior, lo actualizamos
-      final order = _orders.firstWhere((o) => o.id == orderId);
-      if (order.deliveryPersonId != null &&
-          order.deliveryPersonId != deliveryPersonId) {
-        await deliveryService.removeOrderFromDeliveryPerson(
-          order.deliveryPersonId!,
-          orderId,
-        );
-      }
-
+      await _updateDeliveryAssignment(order, deliveryPersonId);
       _error = null;
     } on AppException catch (e) {
       _error = e.message;
@@ -173,31 +132,48 @@ class OrderProvider with ChangeNotifier {
     }
   }
 
+  Future<void> updatePaymentInfo(
+    String orderId,
+    PaymentMethod method,
+    String? reference,
+    bool isPaid,
+  ) async {
+    try {
+      _setLoading(true);
+      await _orderService.updatePaymentInfo(orderId, method, reference, isPaid);
+      _error = null;
+    } on AppException catch (e) {
+      _error = e.message;
+    } finally {
+      _setLoading(false);
+      notifyListeners();
+    }
+  }
+
+  // Búsqueda de clientes
   Future<List<Map<String, dynamic>>> searchCustomers(String query) async {
     try {
-      final QuerySnapshot ordersSnapshot = await _firestore
+      final snapshot = await _firestore
           .collection('orders')
-          .where('customerName', isGreaterThanOrEqualTo: query)
-          .where('customerName', isLessThanOrEqualTo: '$query\uf8ff')
+          .where('customer.name', isGreaterThanOrEqualTo: query)
+          .where('customer.name', isLessThanOrEqualTo: '$query\uf8ff')
           .get();
 
-      return ordersSnapshot.docs.map((doc) {
-        final data = doc.data() as Map<String, dynamic>;
+      return snapshot.docs.map((doc) {
+        final data = doc.data();
         return {
-          'name': data['customerName'] ?? '',
-          'phone': data['customerPhone'] ?? '',
-          'address': data['customerAddress'] ?? '',
+          'name': data['customer']['name'] ?? '',
+          'phone': data['customer']['phone'] ?? '',
+          'address': data['customer']['address'] ?? '',
         };
       }).toList();
     } catch (e) {
-      if (kDebugMode) {
-        print('Error searching customers: $e');
-      }
+      if (kDebugMode) print('Error searching customers: $e');
       return [];
     }
   }
 
-  // Manejo de filtros
+  // Filtros
   void setDateRange(DateTime? start, DateTime? end) {
     _startDate = start;
     _endDate = end;
@@ -214,21 +190,71 @@ class OrderProvider with ChangeNotifier {
     _setupOrdersListener();
   }
 
-  void setDeliveryPersonFilter(String? deliveryPersonId) {
-    _deliveryPersonId = deliveryPersonId;
+  void setDeliveryPersonFilter(String? id) {
+    _deliveryPersonId = id;
     _setupOrdersListener();
   }
 
-  // Selección de pedido
-  void selectOrder(String orderId) {
-    _selectedOrder = _orders.firstWhere(
-      (order) => order.id == orderId,
-      orElse: () => _selectedOrder!,
-    );
-    notifyListeners();
+  // Utilidades privadas
+  bool _canUpdateStatus(OrderStatus current, OrderStatus next) {
+    if (current == OrderStatus.cancelled) return false;
+    if (current == OrderStatus.delivered && next != OrderStatus.cancelled) {
+      return false;
+    }
+    return true;
   }
 
-  // Utilidades
+  DeliveryOrder _findOrder(String orderId) {
+    return _orders.firstWhere(
+      (o) => o.id == orderId,
+      orElse: () => throw AppException('Pedido no encontrado'),
+    );
+  }
+
+  Future<void> _handleDeliveryPersonRemoval(
+      String deliveryPersonId, String orderId) async {
+    final deliveryService = DeliveryService();
+    await deliveryService.removeOrderFromDeliveryPerson(
+        deliveryPersonId, orderId);
+  }
+
+  Future<void> _updateDeliveryAssignment(
+      DeliveryOrder order, String newDeliveryId) async {
+    final deliveryService = DeliveryService();
+
+    await _orderService.assignDeliveryPerson(order.id, newDeliveryId);
+    await deliveryService.addOrderToDeliveryPerson(newDeliveryId, order.id);
+
+    if (order.delivery.deliveryPersonId != null &&
+        order.delivery.deliveryPersonId != newDeliveryId) {
+      await _handleDeliveryPersonRemoval(
+          order.delivery.deliveryPersonId!, order.id);
+    }
+  }
+
+  Future<List<StoreData>> getStores() async {
+    try {
+      // Accede a la colección "stores" en Firestore
+      final QuerySnapshot<Map<String, dynamic>> snapshot =
+          await FirebaseFirestore.instance.collection('stores').get();
+
+      // Convierte los documentos de Firestore en una lista de objetos StoreData
+      return snapshot.docs.map((doc) {
+        final data = doc.data();
+        return StoreData.fromMap({
+          ...data,
+          'id': doc.id, // Incluye el ID del documento
+        });
+      }).toList();
+    } catch (e) {
+      // Manejo de errores
+      if (kDebugMode) {
+        print('Error al obtener las tiendas: $e');
+      }
+      return [];
+    }
+  }
+
   void _setLoading(bool value) {
     _isLoading = value;
     notifyListeners();
@@ -237,42 +263,5 @@ class OrderProvider with ChangeNotifier {
   void clearError() {
     _error = null;
     notifyListeners();
-  }
-
-  Future<void> updatePaymentStatus(String orderId, bool isPaid) async {
-    try {
-      _setLoading(true);
-      await _orderService.updatePaymentStatus(orderId, isPaid);
-      _error = null;
-    } on AppException catch (e) {
-      _error = e.message;
-    } finally {
-      _setLoading(false);
-      notifyListeners();
-    }
-  }
-
-  // Agregar este método a la clase OrderProvider
-  Future<void> updatePaymentInfo(
-    String orderId,
-    PaymentMethod method,
-    String? reference,
-    bool isPaid,
-  ) async {
-    try {
-      _setLoading(true);
-      await _orderService.updatePaymentInfo(
-        orderId,
-        method,
-        reference,
-        isPaid,
-      );
-      _error = null;
-    } on AppException catch (e) {
-      _error = e.message;
-    } finally {
-      _setLoading(false);
-      notifyListeners();
-    }
   }
 }

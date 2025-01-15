@@ -84,7 +84,7 @@ class OrderDetailsImageGenerator {
                   style: TextStyle(fontSize: 18),
                 ),
                 Text(
-                  'S/ ${order.subtotal.toStringAsFixed(2)}',
+                  'S/ ${order.payment.subtotal.toStringAsFixed(2)}',
                   style: const TextStyle(fontSize: 18),
                 ),
               ],
@@ -98,7 +98,7 @@ class OrderDetailsImageGenerator {
                   style: TextStyle(fontSize: 18),
                 ),
                 Text(
-                  'S/ ${order.deliveryFee.toStringAsFixed(2)}',
+                  'S/ ${order.payment.deliveryFee.toStringAsFixed(2)}',
                   style: const TextStyle(fontSize: 18),
                 ),
               ],
